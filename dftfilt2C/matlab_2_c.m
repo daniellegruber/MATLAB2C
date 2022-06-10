@@ -1,23 +1,49 @@
+%% Directories
+work_dir = 'C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\dftfilt2C';
+CLion_dir = 'C:\Users\danie\CLionProjects\dftfilt2';
+
 %% Check for run-time issues
-% coder.screener('dftfilt2_2_c.m')
-% dftfilt2_test;
-% codegen dftfilt2_2_c -args {freqs, cycles, srate} -test dftfilt2_test
+coder.screener('dftfilt2_2_c.m')
+dftfilt2_test;
+codegen dftfilt2_2_c -args {freqs, cycles, srate} -test dftfilt2_test
 
-%% Generate C code
-% cfg = coder.config('lib', 'ecoder', false);
-% codegen -config cfg dftfilt2_2_c.m -args {freqs, cycles, srate} -report
+%% Standalone C/C++ code and compile it to a library specifying code generation options
+% This will generate an example main function
 
-%% Simpler generation, can use this if you already screened
-codegen -report -config:lib dftfilt2_2_c -args {freqs, cycles, srate}
+% 1. Create a configuration object for a C static library
+cfg = coder.config('lib');
+
+% 2. Generate a C static library using the configuration object
+codegen -report -config cfg dftfilt2_2_c -args {freqs, cycles, srate}
+
+%% Copy example main files
+main_path = fullfile(work_dir, 'codegen/lib/dftfilt2_2_c/examples/main.c');
+mainh_path = fullfile(work_dir, 'codegen/lib/dftfilt2_2_c/examples/main.h');
+copyfile(main_path, CLion_dir)
+copyfile(mainh_path, CLion_dir)
+
+% After this step you have to modify the main files. The example 
+% main function declares and initializes data, including dynamically
+% allocated data, to zero values. It calls entry-point functions 
+% with arguments set to zero values, but it does not use values 
+% returned from the entry-point functions.
+
+%% Generate the application
+% Create a configuration object for a C standalone executable
+cfg = coder.config('exe');
+
+% Generate a C standalone executable using the configuration object
+% and the modified main function.
+codegen -report -config cfg dftfilt2_2_c main.c main.h
+
+% By default, the code generated for the executable is in the 
+% folder codegen/exe/dftfilt2.
 
 %% Package generated code in ZIP file for relocation (flat)
 % load('C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\dftfilt2C\codegen\lib\dftfilt2_2_c\buildInfo.mat');
 % filename = 'C:\Users\danie\CLionProjects\dftfilt2\dftfilt2';
 % packNGo(buildInfo,'fileName',filename);
 
-% work_dir = 'C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\dftfilt2C';
-% CLion_dir = 'C:\Users\danie\CLionProjects\dftfilt2_flat';
-% 
 % buildInfo_dir = fullfile(work_dir, 'codegen\lib\dftfilt2_2_c', 'buildInfo.mat');
 % load(buildInfo_dir);
 % 
@@ -26,8 +52,6 @@ codegen -report -config:lib dftfilt2_2_c -args {freqs, cycles, srate}
 % unzip(filename, CLion_dir)
 
 %% Package generated code in ZIP file for relocation (hierarchical)
-work_dir = 'C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\dftfilt2C';
-CLion_dir = 'C:\Users\danie\CLionProjects\dftfilt2';
 
 buildInfo_dir = fullfile(work_dir, 'codegen\lib\dftfilt2_2_c', 'buildInfo.mat');
 load(buildInfo_dir);

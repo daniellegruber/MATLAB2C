@@ -55,7 +55,7 @@
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 % THE POSSIBILITY OF SUCH DAMAGE.
 
-function wavelet = dftfilt2( freqs, cycles, srate, cycleinc, type);
+function wavelet = dftfilt2_2_c( freqs, cycles, srate, cycleinc, type)
 
     if nargin < 3
         error('3 arguments required');
