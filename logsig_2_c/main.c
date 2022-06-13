@@ -36,16 +36,13 @@
 
 /* Include files */
 #include "main.h"
-#include "dftfilt2_2_c.h"
-#include "dftfilt2_2_c_emxAPI.h"
-#include "dftfilt2_2_c_terminate.h"
-#include "dftfilt2_2_c_types.h"
-#include "rt_nonfinite.h"
+#include "logsig_2_c.h"
+#include "logsig_2_c_terminate.h"
 
 /* Function Declarations */
 static double argInit_real_T(void);
 
-static void main_dftfilt2_2_c(void);
+static void main_logsig_2_c(void);
 
 /* Function Definitions */
 static double argInit_real_T(void)
@@ -53,42 +50,36 @@ static double argInit_real_T(void)
   return 0.0;
 }
 
-static void main_dftfilt2_2_c(double freqs, int cycles, double srate)
+static void main_logsig_2_c(void)
 {
-  cell_wrap_0 wavelet;
-  double freqs_tmp;
-  emxInitMatrix_cell_wrap_01(*(cell_wrap_0(*)[1]) & wavelet);
-  /* Initialize function 'dftfilt2_2_c' input arguments. */
-  freqs_tmp = argInit_real_T();
-  /* Call the entry-point 'dftfilt2_2_c'. */
-  dftfilt2_2_c(freqs_tmp, freqs_tmp, freqs_tmp, *(cell_wrap_0(*)[1]) & wavelet);
-  emxDestroyMatrix_cell_wrap_0(*(cell_wrap_0(*)[1]) & wavelet);
+  double l;
+  /* Initialize function 'logsig_2_c' input arguments. */
+  /* Call the entry-point 'logsig_2_c'. */
+  l = logsig_2_c(argInit_real_T());
 }
 
 int main(int argc, char **argv)
 {
-//   (void)argc;
-//   (void)argv;
-    double freqs;
-    int cycles;
-    double srate;
+  // (void)argc;
+  // (void)argv;
+    double M;
 
+    if (argc != 2) {
+          printf("Expected 1 argument: M\n");
+          exit(-1);
+    }
+    
+    M = atof(argv[1]);
+    printf("M = %f", M);
 
   /* The initialize function is being called automatically from your entry-point
    * function. So, a call to initialize is not included here. */
   /* Invoke the entry-point functions.
 You can call entry-point functions multiple times. */
-
-    // force type to be int or double
-    freqs = argv[1]; 
-    cycles = argv[2];
-    srate = argv[3];
-
-  main_dftfilt2_2_c(freqs, cycles, srate);
-
+  main_logsig_2_c(M);
   /* Terminate the application.
 You do not need to do this more than one time. */
-  dftfilt2_2_c_terminate();
+  logsig_2_c_terminate();
   return 0;
 }
 

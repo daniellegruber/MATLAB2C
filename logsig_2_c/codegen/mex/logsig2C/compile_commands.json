@@ -1,0 +1,56 @@
+[
+  {
+    "directory": "C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C",
+    "command": "C:\\ProgramData\\MATLAB\\SupportPackages\\R2022a\\3P.instrset\\mingw_w64.instrset\\bin\\gcc -c -fexceptions -fno-omit-frame-pointer -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c99 -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\\interface\" -I \"C:\\Program Files\\MATLAB\\R2022a\\extern\\include\" -I \".\" -DMODEL=logsig2C_mex -D__USE_MINGW_ANSI_STDIO=1   logsig2C_data.c -o build/win64/logsig2C_data.o",
+    "file": "logsig2C_data.c",
+    "output": "build/win64/logsig2C_data.o"
+  },
+  {
+    "directory": "C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C",
+    "command": "C:\\ProgramData\\MATLAB\\SupportPackages\\R2022a\\3P.instrset\\mingw_w64.instrset\\bin\\gcc -c -fexceptions -fno-omit-frame-pointer -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c99 -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\\interface\" -I \"C:\\Program Files\\MATLAB\\R2022a\\extern\\include\" -I \".\" -DMODEL=logsig2C_mex -D__USE_MINGW_ANSI_STDIO=1   rt_nonfinite.c -o build/win64/rt_nonfinite.o",
+    "file": "rt_nonfinite.c",
+    "output": "build/win64/rt_nonfinite.o"
+  },
+  {
+    "directory": "C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C",
+    "command": "C:\\ProgramData\\MATLAB\\SupportPackages\\R2022a\\3P.instrset\\mingw_w64.instrset\\bin\\gcc -c -fexceptions -fno-omit-frame-pointer -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c99 -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\\interface\" -I \"C:\\Program Files\\MATLAB\\R2022a\\extern\\include\" -I \".\" -DMODEL=logsig2C_mex -D__USE_MINGW_ANSI_STDIO=1   logsig2C_initialize.c -o build/win64/logsig2C_initialize.o",
+    "file": "logsig2C_initialize.c",
+    "output": "build/win64/logsig2C_initialize.o"
+  },
+  {
+    "directory": "C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C",
+    "command": "C:\\ProgramData\\MATLAB\\SupportPackages\\R2022a\\3P.instrset\\mingw_w64.instrset\\bin\\gcc -c -fexceptions -fno-omit-frame-pointer -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c99 -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\\interface\" -I \"C:\\Program Files\\MATLAB\\R2022a\\extern\\include\" -I \".\" -DMODEL=logsig2C_mex -D__USE_MINGW_ANSI_STDIO=1   logsig2C_terminate.c -o build/win64/logsig2C_terminate.o",
+    "file": "logsig2C_terminate.c",
+    "output": "build/win64/logsig2C_terminate.o"
+  },
+  {
+    "directory": "C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C",
+    "command": "C:\\ProgramData\\MATLAB\\SupportPackages\\R2022a\\3P.instrset\\mingw_w64.instrset\\bin\\gcc -c -fexceptions -fno-omit-frame-pointer -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c99 -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\\interface\" -I \"C:\\Program Files\\MATLAB\\R2022a\\extern\\include\" -I \".\" -DMODEL=logsig2C_mex -D__USE_MINGW_ANSI_STDIO=1   logsig2C.c -o build/win64/logsig2C.o",
+    "file": "logsig2C.c",
+    "output": "build/win64/logsig2C.o"
+  },
+  {
+    "directory": "C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C",
+    "command": "C:\\ProgramData\\MATLAB\\SupportPackages\\R2022a\\3P.instrset\\mingw_w64.instrset\\bin\\gcc -c -fexceptions -fno-omit-frame-pointer -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c99 -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\\interface\" -I \"C:\\Program Files\\MATLAB\\R2022a\\extern\\include\" -I \".\" -DMODEL=logsig2C_mex -D__USE_MINGW_ANSI_STDIO=1   interface/_coder_logsig2C_api.c -o build/win64/_coder_logsig2C_api.o",
+    "file": "interface/_coder_logsig2C_api.c",
+    "output": "build/win64/_coder_logsig2C_api.o"
+  },
+  {
+    "directory": "C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C",
+    "command": "C:\\ProgramData\\MATLAB\\SupportPackages\\R2022a\\3P.instrset\\mingw_w64.instrset\\bin\\gcc -c -fexceptions -fno-omit-frame-pointer -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c99 -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\\interface\" -I \"C:\\Program Files\\MATLAB\\R2022a\\extern\\include\" -I \".\" -DMODEL=logsig2C_mex -D__USE_MINGW_ANSI_STDIO=1   interface/_coder_logsig2C_mex.c -o build/win64/_coder_logsig2C_mex.o",
+    "file": "interface/_coder_logsig2C_mex.c",
+    "output": "build/win64/_coder_logsig2C_mex.o"
+  },
+  {
+    "directory": "C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C",
+    "command": "C:\\ProgramData\\MATLAB\\SupportPackages\\R2022a\\3P.instrset\\mingw_w64.instrset\\bin\\gcc -c -fexceptions -fno-omit-frame-pointer -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c99 -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\\interface\" -I \"C:\\Program Files\\MATLAB\\R2022a\\extern\\include\" -I \".\" -DMODEL=logsig2C_mex -D__USE_MINGW_ANSI_STDIO=1   interface/_coder_logsig2C_info.c -o build/win64/_coder_logsig2C_info.o",
+    "file": "interface/_coder_logsig2C_info.c",
+    "output": "build/win64/_coder_logsig2C_info.o"
+  },
+  {
+    "directory": "C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C",
+    "command": "C:\\ProgramData\\MATLAB\\SupportPackages\\R2022a\\3P.instrset\\mingw_w64.instrset\\bin\\gcc -c -fexceptions -fno-omit-frame-pointer -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c99 -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\" -I \"C:\\Users\\danie\\OneDrive\\Documents\\MATLAB\\MATLAB2C\\codegen\\mex\\logsig2C\\interface\" -I \"C:\\Program Files\\MATLAB\\R2022a\\extern\\include\" -I \".\" -DMODEL=logsig2C_mex -D__USE_MINGW_ANSI_STDIO=1   \"C:/Program Files/MATLAB/R2022a/extern/version/c_mexapi_version.c\" -o build/win64/c_mexapi_version.o",
+    "file": "C:/Program Files/MATLAB/R2022a/extern/version/c_mexapi_version.c",
+    "output": "build/win64/c_mexapi_version.o"
+  }
+]

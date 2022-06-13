@@ -1,0 +1,9 @@
+LIBRARY logsig_2_c_mex.mexw64
+EXPORTS
+mexFunction
+mexfilerequiredapiversion
+emlrtMexFcnProperties
+logsig_2_c
+logsig_2_c_initialize
+logsig_2_c_terminate
+logsig_2_c_atexit

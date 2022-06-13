@@ -2,14 +2,25 @@
 % Code generation workflow:
 % https://www.mathworks.com/help/coder/code-generation.html?s_tid=CRUX_lftnav
 
+fun_name = 'logsig';
+cfun_name = [fun_name, '_2_c'];
+test_name = [fun_name, '_test'];
 %% Directories
-work_dir = 'C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\dftfilt2C';
-CLion_dir = 'C:\Users\danie\CLionProjects\dftfilt2';
-
+work_dir = fullfile('C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C',...
+    cfun_name);
+codegen_dir = fullfile(work_dir, 'codegen\lib', cfun_name);
+CLion_dir = fullfile('C:\Users\danie\CLionProjects', cfun_name);
+if ~exist(CLion_dir, 'dir')
+   mkdir(CLion_dir)
+end
+%% Extract arguments using regexp
+fun_text = fileread([cfun_name, '.m']);
+args = regexp(fun_text, '(?<=\()[^)]*(?=\))', 'match', 'once');
+args_split = strtrim(strsplit(args, ','));
 %% Check for run-time issues
-coder.screener('dftfilt2_2_c.m')
-dftfilt2_test;
-codegen dftfilt2_2_c -args {freqs, cycles, srate} -test dftfilt2_test
+coder.screener([cfun_name, '.m'])
+eval(test_name);
+eval(['codegen ', cfun_name, ' -args {', args, '} -test ', test_name])
 
 %% Standalone C/C++ code and compile it to a library specifying code generation options
 % This will generate an example main function
@@ -20,13 +31,15 @@ codegen dftfilt2_2_c -args {freqs, cycles, srate} -test dftfilt2_test
 cfg = coder.config('lib');
 
 % 2. Generate a C static library using the configuration object
-codegen -report -config cfg dftfilt2_2_c -args {freqs, cycles, srate}
+eval(['codegen -report -config cfg ', cfun_name, ' -args {', args, '}'])
 
 %% Copy example main files to modify them
-main_path = fullfile(work_dir, 'codegen/lib/dftfilt2_2_c/examples/main.c');
-mainh_path = fullfile(work_dir, 'codegen/lib/dftfilt2_2_c/examples/main.h');
+main_path = fullfile(work_dir, ['codegen/lib/', cfun_name, '/examples/main.c']);
+mainh_path = fullfile(work_dir, ['codegen/lib/', cfun_name, '/examples/main.h']);
 copyfile(main_path, CLion_dir)
 copyfile(mainh_path, CLion_dir)
+copyfile(main_path, work_dir)
+copyfile(mainh_path, work_dir)
 
 % After this step you have to modify the main files. The example 
 % main function declares and initializes data, including dynamically
@@ -38,26 +51,27 @@ copyfile(mainh_path, CLion_dir)
 % https://www.mathworks.com/help/coder/ug/structure-of-example-cc-main-function.html
 
 %% Generate the application
-% Create a configuration object for a C standalone executable
+% Create a configuration object for a C standalone evalutable
 cfg = coder.config('exe');
 
-% Generate a C standalone executable using the configuration object
+% Generate a C standalone evalutable using the configuration object
 % and the modified main function.
 codegen -report -config cfg dftfilt2_2_c main.c main.h
+eval(['codegen -report -config cfg ', cfun_name, ' main.c main.h'])
 
-% By default, the code generated for the executable is in the 
-% folder codegen/exe/dftfilt2.
+% By default, the code generated for the evalutable is in the 
+% folder codegen/exe/cfun_name.
 
 %% Run the application
 
-system('dftfilt2.exe 5 5 256')
+system([cfun_name,'.exe 1'])
 %% Package generated code in ZIP file for relocation
 % packNGo documentation: https://www.mathworks.com/help/coder/ref/packngo.html
 
-buildInfo_dir = fullfile(work_dir, 'codegen\lib\dftfilt2_2_c', 'buildInfo.mat');
+buildInfo_dir = fullfile(work_dir, ['codegen\lib\', cfun_name], 'buildInfo.mat');
 load(buildInfo_dir);
 
-filename = fullfile(work_dir, 'dftfilt2_built.zip');
+filename = fullfile(work_dir, [fun_name, '_built.zip']);
 packNGo(buildInfo, 'packType', 'hierarchical', 'fileName', filename);
 
 unzip(filename, CLion_dir)
