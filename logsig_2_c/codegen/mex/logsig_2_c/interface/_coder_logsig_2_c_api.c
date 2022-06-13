@@ -13,65 +13,10 @@
 #include "_coder_logsig_2_c_api.h"
 #include "logsig_2_c.h"
 #include "logsig_2_c_data.h"
+#include "logsig_2_c_mexutil.h"
 #include "rt_nonfinite.h"
 
-/* Function Declarations */
-static real_T b_emlrt_marshallIn(const emlrtStack *sp, const mxArray *u,
-                                 const emlrtMsgIdentifier *parentId);
-
-static real_T c_emlrt_marshallIn(const emlrtStack *sp, const mxArray *src,
-                                 const emlrtMsgIdentifier *msgId);
-
-static real_T emlrt_marshallIn(const emlrtStack *sp, const mxArray *M,
-                               const char_T *identifier);
-
-static const mxArray *emlrt_marshallOut(const real_T u);
-
 /* Function Definitions */
-static real_T b_emlrt_marshallIn(const emlrtStack *sp, const mxArray *u,
-                                 const emlrtMsgIdentifier *parentId)
-{
-  real_T y;
-  y = c_emlrt_marshallIn(sp, emlrtAlias(u), parentId);
-  emlrtDestroyArray(&u);
-  return y;
-}
-
-static real_T c_emlrt_marshallIn(const emlrtStack *sp, const mxArray *src,
-                                 const emlrtMsgIdentifier *msgId)
-{
-  static const int32_T dims = 0;
-  real_T ret;
-  emlrtCheckBuiltInR2012b((emlrtCTX)sp, msgId, src, (const char_T *)"double",
-                          false, 0U, (void *)&dims);
-  ret = *(real_T *)emlrtMxGetData(src);
-  emlrtDestroyArray(&src);
-  return ret;
-}
-
-static real_T emlrt_marshallIn(const emlrtStack *sp, const mxArray *M,
-                               const char_T *identifier)
-{
-  emlrtMsgIdentifier thisId;
-  real_T y;
-  thisId.fIdentifier = (const char_T *)identifier;
-  thisId.fParent = NULL;
-  thisId.bParentIsCell = false;
-  y = b_emlrt_marshallIn(sp, emlrtAlias(M), &thisId);
-  emlrtDestroyArray(&M);
-  return y;
-}
-
-static const mxArray *emlrt_marshallOut(const real_T u)
-{
-  const mxArray *m;
-  const mxArray *y;
-  y = NULL;
-  m = emlrtCreateDoubleScalar(u);
-  emlrtAssign(&y, m);
-  return y;
-}
-
 void logsig_2_c_api(const mxArray *prhs, const mxArray **plhs)
 {
   emlrtStack st = {
@@ -84,8 +29,9 @@ void logsig_2_c_api(const mxArray *prhs, const mxArray **plhs)
   /* Marshall function inputs */
   M = emlrt_marshallIn(&st, emlrtAliasP(prhs), "M");
   /* Invoke the target function */
+  M = logsig_2_c(&st, M);
   /* Marshall function outputs */
-  *plhs = emlrt_marshallOut(logsig_2_c(M));
+  *plhs = emlrt_marshallOut(M);
 }
 
 /* End of code generation (_coder_logsig_2_c_api.c) */

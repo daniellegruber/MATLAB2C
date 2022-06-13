@@ -60,23 +60,13 @@ static void main_logsig_2_c(void)
 
 int main(int argc, char **argv)
 {
-  // (void)argc;
-  // (void)argv;
-    double M;
-
-    if (argc != 2) {
-          printf("Expected 1 argument: M\n");
-          exit(-1);
-    }
-    
-    M = atof(argv[1]);
-    printf("M = %f", M);
-
+  (void)argc;
+  (void)argv;
   /* The initialize function is being called automatically from your entry-point
    * function. So, a call to initialize is not included here. */
   /* Invoke the entry-point functions.
 You can call entry-point functions multiple times. */
-  main_logsig_2_c(M);
+  main_logsig_2_c();
   /* Terminate the application.
 You do not need to do this more than one time. */
   logsig_2_c_terminate();

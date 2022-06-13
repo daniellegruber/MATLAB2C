@@ -16,3 +16,4 @@ function l = logsig_2_c(M) %#codegen
 % USA
 
 l= 1./(1+exp(-M));
+sprintf('%0.5f',l)

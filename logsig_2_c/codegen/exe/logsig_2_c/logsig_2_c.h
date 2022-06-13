@@ -9,18 +9,24 @@
  *
  */
 
-#pragma once
+#ifndef LOGSIG_2_C_H
+#define LOGSIG_2_C_H
 
 /* Include files */
 #include "rtwtypes.h"
-#include "emlrt.h"
-#include "mex.h"
-#include <math.h>
-#include <stdio.h>
+#include <stddef.h>
 #include <stdlib.h>
-#include <string.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Function Declarations */
-real_T logsig_2_c(const emlrtStack *sp, real_T M);
+extern double logsig_2_c(double M);
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif
 /* End of code generation (logsig_2_c.h) */

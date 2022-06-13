@@ -63,8 +63,10 @@ cfg = coder.config('exe');
 
 % Generate a C standalone evalutable using the configuration object
 % and the modified main function.
-codegen -report -config cfg dftfilt2_2_c main.c main.h
-eval(['codegen -report -config cfg ', cfun_name, ' main.c main.h'])
+% codegen -report -config cfg dftfilt2_2_c main.c main.h
+eval(['codegen -report -config cfg ', cfun_name, ...
+    ' -args {', args, '} ' ...
+    fullfile(codegen_dir,'main.c'), ' ', fullfile(codegen_dir,'main.h')])
 
 % By default, the code generated for the evalutable is in the 
 % folder codegen/exe/cfun_name.

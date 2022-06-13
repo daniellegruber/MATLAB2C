@@ -17,6 +17,9 @@
 #include <stddef.h>
 #include <stdio.h>
 
+/* Custom Source Code */
+#include "main.h"
+
 /* Function Definitions */
 double logsig_2_c(double M)
 {

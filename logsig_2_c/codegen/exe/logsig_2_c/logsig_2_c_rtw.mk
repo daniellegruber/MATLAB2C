@@ -2,9 +2,9 @@
 ## Makefile generated for component 'logsig_2_c'. 
 ## 
 ## Makefile     : logsig_2_c_rtw.mk
-## Generated on : Mon Jun 13 17:09:43 2022
-## Final product: ./logsig_2_c.lib
-## Product type : static-library
+## Generated on : Mon Jun 13 17:09:50 2022
+## Final product: $(START_DIR)/logsig_2_c.exe
+## Product type : executable
 ## 
 ###########################################################################
 
@@ -17,7 +17,6 @@
 # MAKEFILE                Name of this makefile
 # COMPILER_COMMAND_FILE   Compiler command listing model reference header paths
 # CMD_FILE                Command file
-# MODELLIB                Static library target
 
 PRODUCT_NAME              = logsig_2_c
 MAKEFILE                  = logsig_2_c_rtw.mk
@@ -34,7 +33,6 @@ COMPILER_COMMAND_FILE     = logsig_2_c_rtw_comp.rsp
 CMD_FILE                  = logsig_2_c_rtw.rsp
 C_STANDARD_OPTS           = -fwrapv
 CPP_STANDARD_OPTS         = -fwrapv
-MODELLIB                  = logsig_2_c.lib
 
 ###########################################################################
 ## TOOLCHAIN SPECIFICATIONS
@@ -157,9 +155,9 @@ SHAREDLIB_LDFLAGS    = -shared -Wl,--no-undefined \
 ## OUTPUT INFO
 ###########################################################################
 
-PRODUCT = ./logsig_2_c.lib
-PRODUCT_TYPE = "static-library"
-BUILD_TYPE = "Static Library"
+PRODUCT = $(START_DIR)/logsig_2_c.exe
+PRODUCT_TYPE = "executable"
+BUILD_TYPE = "Executable"
 
 ###########################################################################
 ## INCLUDE PATHS
@@ -183,7 +181,7 @@ DEFINES = $(DEFINES_) $(DEFINES_CUSTOM) $(DEFINES_STANDARD)
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_data.c $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_initialize.c $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_terminate.c $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c.c $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_emxutil.c
+SRCS = $(START_DIR)/main.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_data.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_initialize.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_terminate.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_emxutil.c
 
 ALL_SRCS = $(SRCS)
 
@@ -191,7 +189,7 @@ ALL_SRCS = $(SRCS)
 ## OBJECTS
 ###########################################################################
 
-OBJS = logsig_2_c_data.obj logsig_2_c_initialize.obj logsig_2_c_terminate.obj logsig_2_c.obj logsig_2_c_emxutil.obj
+OBJS = main.obj logsig_2_c_data.obj logsig_2_c_initialize.obj logsig_2_c_terminate.obj logsig_2_c.obj logsig_2_c_emxutil.obj
 
 ALL_OBJS = $(OBJS)
 
@@ -261,7 +259,7 @@ MINGW_C_STANDARD_OPTS = $(C_STANDARD_OPTS)
 ## PHONY TARGETS
 ###########################################################################
 
-.PHONY : all build clean info prebuild download execute
+.PHONY : all build buildobj clean info prebuild download execute
 
 
 all : build
@@ -271,6 +269,10 @@ all : build
 build : prebuild $(PRODUCT)
 
 
+buildobj : prebuild $(OBJS) $(PREBUILT_OBJS)
+	@echo "### Successfully generated all binary outputs."
+
+
 prebuild : 
 
 
@@ -278,19 +280,22 @@ download : $(PRODUCT)
 
 
 execute : download
+	@echo "### Invoking postbuild tool "Execute" ..."
+	$(EXECUTE) $(EXECUTE_FLAGS)
+	@echo "### Done invoking postbuild tool."
 
 
 ###########################################################################
 ## FINAL TARGET
 ###########################################################################
 
-#---------------------------------
-# Create a static library         
-#---------------------------------
+#-------------------------------------------
+# Create a standalone executable            
+#-------------------------------------------
 
 $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS)
-	@echo "### Creating static library "$(PRODUCT)" ..."
-	$(AR) $(ARFLAGS)  $(PRODUCT) @$(CMD_FILE)
+	@echo "### Creating standalone executable "$(PRODUCT)" ..."
+	$(LD) $(LDFLAGS) -o $(PRODUCT) @$(CMD_FILE) $(SYSTEM_LIBS) $(TOOLCHAIN_LIBS)
 	@echo "### Created: $(PRODUCT)"
 
 
@@ -318,11 +323,11 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS)
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
-%.obj : $(START_DIR)/codegen/lib/logsig_2_c/%.c
+%.obj : $(START_DIR)/codegen/exe/logsig_2_c/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-%.obj : $(START_DIR)/codegen/lib/logsig_2_c/%.cpp
+%.obj : $(START_DIR)/codegen/exe/logsig_2_c/%.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
@@ -334,23 +339,27 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS)
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
-logsig_2_c_data.obj : $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_data.c
+main.obj : $(START_DIR)/main.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-logsig_2_c_initialize.obj : $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_initialize.c
+logsig_2_c_data.obj : $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_data.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-logsig_2_c_terminate.obj : $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_terminate.c
+logsig_2_c_initialize.obj : $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_initialize.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-logsig_2_c.obj : $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c.c
+logsig_2_c_terminate.obj : $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_terminate.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-logsig_2_c_emxutil.obj : $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_emxutil.c
+logsig_2_c.obj : $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c.c
+	$(CC) $(CFLAGS) -o "$@" "$<"
+
+
+logsig_2_c_emxutil.obj : $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_emxutil.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
