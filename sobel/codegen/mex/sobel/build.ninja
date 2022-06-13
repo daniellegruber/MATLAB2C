@@ -1,0 +1,52 @@
+# CompilerName=mingw64
+# Mode=optim
+ninja_required_version = 1.3
+
+# Basic folders
+root = .
+builddir = $root/build/win64
+matlabdir = C:/Program Files/MATLAB/R2022a
+startdir = C:/Users/danie/OneDrive/Documents/MATLAB/MATLAB2C/sobel
+
+# Toolchain information
+cc = C:\ProgramData\MATLAB\SupportPackages\R2022a\3P.instrset\mingw_w64.instrset\bin\gcc
+cxx = C:\ProgramData\MATLAB\SupportPackages\R2022a\3P.instrset\mingw_w64.instrset\bin\g++
+linker = C:\ProgramData\MATLAB\SupportPackages\R2022a\3P.instrset\mingw_w64.instrset\bin\gcc
+linkerxx = C:\ProgramData\MATLAB\SupportPackages\R2022a\3P.instrset\mingw_w64.instrset\bin\g++
+
+cflags =  -c -fexceptions -fno-omit-frame-pointer -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c99 -I "C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\sobel\codegen\mex\sobel" -I "C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\sobel" -I "C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\sobel\codegen\mex\sobel\interface" -I "C:\Program Files\MATLAB\R2022a\extern\include" -I "." -DMODEL=sobel_mex -D__USE_MINGW_ANSI_STDIO=1 -fopenmp 
+
+cxxflags =  -c -fexceptions -fno-omit-frame-pointer -std=c++11 -m64 -DMATLAB_MEX_FILE  -DMATLAB_MEX_FILE -O2 -fwrapv -DNDEBUG -std=c++11 -I "C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\sobel\codegen\mex\sobel" -I "C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\sobel" -I "C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\sobel\codegen\mex\sobel\interface" -I "C:\Program Files\MATLAB\R2022a\extern\include" -I "." -DMODEL=sobel_mex -D__USE_MINGW_ANSI_STDIO=1 -fopenmp 
+
+ldflags =  -m64 -Wl,--no-undefined -shared -static -L"C:\Program Files\MATLAB\R2022a\extern\lib\win64\mingw64" -llibmx -llibmex -llibmat -lm -llibmwlapack -llibmwblas -o "sobel_mex.mexw64" -L"$matlabdir\extern\lib\win64\mingw64" -llibmwblas -llibemlrt -llibcovrt -llibut -llibmwmathutil -fopenmp sobel_mex.def
+
+# Build Rules
+rule cc
+    command = $cc $cflags $in -o $out
+
+rule cxx
+    command = $cxx $cxxflags $in -o $out
+
+rule link
+    command = $linker @$out.rsp $ldflags
+    rspfile = $out.rsp
+    rspfile_content = $in
+
+rule linkxx
+    command = $linkerxx $in $ldflags
+
+# Build
+build $builddir/sobel_data.o : cc $root/sobel_data.c
+build $builddir/rt_nonfinite.o : cc $root/rt_nonfinite.c
+build $builddir/sobel_initialize.o : cc $root/sobel_initialize.c
+build $builddir/sobel_terminate.o : cc $root/sobel_terminate.c
+build $builddir/sobel.o : cc $root/sobel.c
+build $builddir/_coder_sobel_api.o : cc $root/interface/_coder_sobel_api.c
+build $builddir/_coder_sobel_mex.o : cc $root/interface/_coder_sobel_mex.c
+build $builddir/conv2AXPYSameCMP.o : cc $root/conv2AXPYSameCMP.c
+build $builddir/sobel_emxutil.o : cc $root/sobel_emxutil.c
+build $builddir/_coder_sobel_info.o : cc $root/interface/_coder_sobel_info.c
+build $builddir/c_mexapi_version.o : cc $matlabdir/extern/version/c_mexapi_version.c
+
+# Link
+build $root\sobel_mex.mexw64 : link $builddir/sobel_data.o $builddir/rt_nonfinite.o $builddir/sobel_initialize.o $builddir/sobel_terminate.o $builddir/sobel.o $builddir/_coder_sobel_api.o $builddir/_coder_sobel_mex.o $builddir/conv2AXPYSameCMP.o $builddir/sobel_emxutil.o $builddir/_coder_sobel_info.o $builddir/c_mexapi_version.o 

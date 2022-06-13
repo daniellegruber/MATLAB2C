@@ -41,6 +41,7 @@ copyfile(mainh_path, CLion_dir)
 copyfile(main_path, work_dir)
 copyfile(mainh_path, work_dir)
 
+%% Automatically modify main file
 % After this step you have to modify the main files. The example 
 % main function declares and initializes data, including dynamically
 % allocated data, to zero values. It calls entry-point functions 
@@ -49,6 +50,12 @@ copyfile(mainh_path, work_dir)
 
 % See this page on the structure of the generated example main file:
 % https://www.mathworks.com/help/coder/ug/structure-of-example-cc-main-function.html
+
+% You can skip this step if you want to do it manually. If you do it
+% automatically, at least check that everything "worked" correctly and that
+% you don't have to make any more changes.
+
+modify_main;
 
 %% Generate the application
 % Create a configuration object for a C standalone evalutable
