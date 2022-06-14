@@ -3,7 +3,7 @@
  * perform academic research at degree granting institutions only.  Not
  * for government, commercial, or other organizational use.
  *
- * main.c
+ * main.h
  *
  * Code generation for function 'main'
  *
@@ -34,66 +34,24 @@
 /*                                                                       */
 /*************************************************************************/
 
+#ifndef MAIN_H
+#define MAIN_H
+
 /* Include files */
- #include <stdio.h>
-#include "main.h"
-#include "logsig_2_c.h"
-#include "logsig_2_c_terminate.h"
+#include "rtwtypes.h"
+#include <stddef.h>
+#include <stdlib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Function Declarations */
-static double argInit_real_T(void);
+extern int main(int argc, char **argv);
 
-////static void main_logsig_2_c(void);
- //static double main_logsig_2_c(void);
-//  static void main_logsig_2_c(double M);
-    static double main_logsig_2_c(double M);
-
-/* Function Definitions */
-static double argInit_real_T(void)
-{
-  return 0.0;
+#ifdef __cplusplus
 }
+#endif
 
-////static void main_logsig_2_c(void)
- //static double main_logsig_2_c(void)
-//  static void main_logsig_2_c(double M)
-    static double main_logsig_2_c(double M)
-{
-  double l;
-  /* Initialize function 'logsig_2_c' input arguments. */
-  /* Call the entry-point 'logsig_2_c'. */
-//  l = logsig_2_c(argInit_real_T());
-    l = logsig_2_c(M);
-    return l;
-}
-
-int main(int argc, char **argv)
-{
-//  (void)argc;
-//  (void)argv;
-  double M;
-  if (argc != 2) {
-  printf('Expected 1 arguments: M\n');
-  exit(-1);
-  }
-  M= atof(argv[1]);
-  int i=0;
-  printf("\nexe name=%s", argv[0]);
-  for (i=1; i< argc; i++) {
-  printf("\narg%d=%s", i, argv[i]);
-   }
-  printf("M=%f\n",M);
-  /* The initialize function is being called automatically from your entry-point
-   * function. So, a call to initialize is not included here. */
-  /* Invoke the entry-point functions.
-You can call entry-point functions multiple times. */
-//  main_logsig_2_c();
-    main_logsig_2_c(M);
-  /* Terminate the application.
-You do not need to do this more than one time. */
-  logsig_2_c_terminate();
-  return 0;
-}
-
-/* End of code generation (main.c) */
-
+#endif
+/* End of code generation (main.h) */

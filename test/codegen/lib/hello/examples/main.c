@@ -35,18 +35,14 @@
 /*************************************************************************/
 
 /* Include files */
- #include <stdio.h>
 #include "main.h"
-#include "logsig_2_c.h"
-#include "logsig_2_c_terminate.h"
+#include "hello.h"
+#include "hello_terminate.h"
 
 /* Function Declarations */
 static double argInit_real_T(void);
 
-////static void main_logsig_2_c(void);
- //static double main_logsig_2_c(void);
-//  static void main_logsig_2_c(double M);
-    static double main_logsig_2_c(double M);
+static void main_hello(void);
 
 /* Function Definitions */
 static double argInit_real_T(void)
@@ -54,46 +50,26 @@ static double argInit_real_T(void)
   return 0.0;
 }
 
-////static void main_logsig_2_c(void)
- //static double main_logsig_2_c(void)
-//  static void main_logsig_2_c(double M)
-    static double main_logsig_2_c(double M)
+static void main_hello(void)
 {
-  double l;
-  /* Initialize function 'logsig_2_c' input arguments. */
-  /* Call the entry-point 'logsig_2_c'. */
-//  l = logsig_2_c(argInit_real_T());
-    l = logsig_2_c(M);
-    return l;
+  /* Initialize function 'hello' input arguments. */
+  /* Call the entry-point 'hello'. */
+  hello(argInit_real_T());
 }
 
 int main(int argc, char **argv)
 {
-//  (void)argc;
-//  (void)argv;
-  double M;
-  if (argc != 2) {
-  printf('Expected 1 arguments: M\n');
-  exit(-1);
-  }
-  M= atof(argv[1]);
-  int i=0;
-  printf("\nexe name=%s", argv[0]);
-  for (i=1; i< argc; i++) {
-  printf("\narg%d=%s", i, argv[i]);
-   }
-  printf("M=%f\n",M);
+  (void)argc;
+  (void)argv;
   /* The initialize function is being called automatically from your entry-point
    * function. So, a call to initialize is not included here. */
   /* Invoke the entry-point functions.
 You can call entry-point functions multiple times. */
-//  main_logsig_2_c();
-    main_logsig_2_c(M);
+  main_hello();
   /* Terminate the application.
 You do not need to do this more than one time. */
-  logsig_2_c_terminate();
+  hello_terminate();
   return 0;
 }
 
 /* End of code generation (main.c) */
-

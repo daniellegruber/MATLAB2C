@@ -21,6 +21,14 @@ fun_text = fileread([cfun_name, '.m']);
 args = regexp(fun_text, '(?<=\()[^)]*(?=\))', 'match', 'once');
 args_split = strtrim(strsplit(args, ','));
 
+%% Extract outputs using regexp
+outs = extractBetween(fun_text,'function','=');
+if iscell(outs)
+    outs = outs{1};
+end
+outs = unique(regexprep(outs, {'[', ']'}, ''));
+outs_split = strtrim(strsplit(outs, ','));
+
 %% Check for run-time issues
 coder.screener([cfun_name, '.m'])
 eval(test_name);

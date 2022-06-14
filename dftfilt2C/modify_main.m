@@ -9,9 +9,7 @@ lines2 = lines;
 %% Declare variables and specify data types
 
 nargv = length(args_split);
-nout = length(outs_split);
-arg_classes = cell(1,nargv);
-out_classes = cell(1,nout);
+classes = cell(1,nargv);
 
 modify_text = cell(1,4);
 modify_text{1} = cell(nargv, 1);
@@ -20,18 +18,35 @@ modify_text{3} = cell(nargv, 1);
 for i = 1:nargv
     % determine class of variable using the variables saved in
     % workspace/mat file for testing
-    arg_classes{i} = eval(['class(',args_split{i},')']);
-    modify_text{1}{i} = [arg_classes{i}, ' ', args_split{i}, ';'];
+    classes{i} = eval(['class(',args_split{i},')']);
+    modify_text{1}{i} = [classes{i}, ' ', args_split{i}, ';'];
 
     % if variable is numeric, convert from string to float using atof()
-    if strcmp(arg_classes{i},'double')
+    if strcmp(classes{i},'double')
         modify_text{3}{i} = [args_split{i} '= atof(argv[', num2str(i), ']);'];
     end
 end
+%% Determine whether number of arguments is correct
+modify_text{2} = cell(4,1);
+modify_text{2}{1} = ['if (argc != ', num2str(nargv + 1), ') {'];
+modify_text{2}{2} = ['printf(''Expected ', num2str(nargv) , ' arguments: ', args, '\n'');'];
+modify_text{2}{3} = 'exit(-1);';
+modify_text{2}{4} = '}';
 
-for i = nout
-    out_classes{i} = eval(['class(',outs_split{i},')']);
-end
+%% For testing
+
+modify_text{4} = cell(5,1);
+modify_text{4}{1} = 'int i=0;';
+modify_text{4}{2} = 'printf("\nexe name=%s", argv[0]);';
+modify_text{4}{3} = 'for (i=1; i< argc; i++) {';
+modify_text{4}{4} = 'printf("\narg%d=%s", i, argv[i]);';
+modify_text{4}{5} = ' }';
+
+%% Include stdio.h
+line = '/* Include files */';
+insertion = '#include <stdio.h>';
+insert_idx = find(contains(lines2, line));
+lines2 = insert_code(lines2, insertion, insert_idx);
 
 %% Replace all ... in main_cfun_name(...) and cfun_name(...) with args
 remove = regexp(lines2,['(', cfun_name,'\(\))|', ... 
@@ -64,59 +79,6 @@ replace = lines2(contains(lines2,remove));
 replace = strrep(replace, args, arg_classes);
 lines2 = replace_code(lines2, remove, replace);
 
-%% Change void to return type
-line = ['static void main_', cfun_name];
-insert_idx = find(contains(lines2, line));
-
-insertion = strrep(lines2(insert_idx), 'static void', ...
-    ['static ', out_classes{1}]);
-if iscell(insertion)
-    for i = 1:length(insert_idx)
-        lines2 = insert_code(lines2, insertion{i}, insert_idx(i) + i - 1);
-    end
-else
-    lines2 = insert_code(lines2, insertion, insert_idx);
-end
-[lines2, ~] = comment_out(lines2, line);
-
-
-
-% actually won't do this because if there are multiple return values might
-% be hard, instead just save values
-
-% test: even simpler for now, just print value of l
-
-% line = fun_call;
-% insert_idx = find(contains(lines2,line));
-% insertion = 'printf("\nM=%f",M);';
-% lines2 = insert_code(lines2, insertion, insert_idx);
-%% Determine whether number of arguments is correct
-modify_text{2} = cell(4,1);
-modify_text{2}{1} = ['if (argc != ', num2str(nargv + 1), ') {'];
-modify_text{2}{2} = ['printf(''Expected ', num2str(nargv) , ' arguments: ', args, '\n'');'];
-modify_text{2}{3} = 'exit(-1);';
-modify_text{2}{4} = '}';
-
-%% For testing
-
-modify_text{4} = cell(5,1);
-modify_text{4}{1} = 'int i=0;';
-modify_text{4}{2} = 'printf("\nexe name=%s", argv[0]);';
-modify_text{4}{3} = 'for (i=1; i< argc; i++) {';
-modify_text{4}{4} = 'printf("\narg%d=%s", i, argv[i]);';
-modify_text{4}{5} = ' }';
-modify_text{4}{6} = 'printf("M=%f\n",M);';
-
-%% Include stdio.h
-line = '/* Include files */';
-insertion = '#include <stdio.h>';
-insert_idx = find(contains(lines2, line));
-lines2 = insert_code(lines2, insertion, insert_idx);
-
-
-
-
-
 %% Insert declaration of variables and argument number check
 
 remove = {'(void)argc', '(void)argv'};
@@ -126,12 +88,6 @@ insertion = vertcat(modify_text{1:4});
 insert_idx = comment_idx(end);
 lines2 = insert_code(lines2, insertion, insert_idx);
 
-
-%%
-line = fun_call;
-insert_idx = find(contains(lines2,line));
-insertion = ['return ', outs_split{1}, ';'];
-lines2 = insert_code(lines2, insertion, insert_idx);
 %% Write to file
 % Create a new main.c file in the codegen folder
 
