@@ -47,7 +47,7 @@ copyfile(mainh_path, codegen_dir)
 
 
 %% Copy fun mfile to codegen folder
-copyfile(fullfile(work_dir, [cfun_name, '.m']), codegen_dir)
+copyfile(mainh_path, codegen_dir)
 
 %% Automatically modify main file
 % After this step you have to modify the main files. The example 
