@@ -43,10 +43,8 @@ build $builddir/logsig_2_c_terminate.o : cc $root/logsig_2_c_terminate.c
 build $builddir/logsig_2_c.o : cc $root/logsig_2_c.c
 build $builddir/_coder_logsig_2_c_api.o : cc $root/interface/_coder_logsig_2_c_api.c
 build $builddir/_coder_logsig_2_c_mex.o : cc $root/interface/_coder_logsig_2_c_mex.c
-build $builddir/logsig_2_c_emxutil.o : cc $root/logsig_2_c_emxutil.c
-build $builddir/logsig_2_c_mexutil.o : cc $root/logsig_2_c_mexutil.c
 build $builddir/_coder_logsig_2_c_info.o : cc $root/interface/_coder_logsig_2_c_info.c
 build $builddir/c_mexapi_version.o : cc $matlabdir/extern/version/c_mexapi_version.c
 
 # Link
-build $root\logsig_2_c_mex.mexw64 : link $builddir/logsig_2_c_data.o $builddir/rt_nonfinite.o $builddir/logsig_2_c_initialize.o $builddir/logsig_2_c_terminate.o $builddir/logsig_2_c.o $builddir/_coder_logsig_2_c_api.o $builddir/_coder_logsig_2_c_mex.o $builddir/logsig_2_c_emxutil.o $builddir/logsig_2_c_mexutil.o $builddir/_coder_logsig_2_c_info.o $builddir/c_mexapi_version.o 
+build $root\logsig_2_c_mex.mexw64 : link $builddir/logsig_2_c_data.o $builddir/rt_nonfinite.o $builddir/logsig_2_c_initialize.o $builddir/logsig_2_c_terminate.o $builddir/logsig_2_c.o $builddir/_coder_logsig_2_c_api.o $builddir/_coder_logsig_2_c_mex.o $builddir/_coder_logsig_2_c_info.o $builddir/c_mexapi_version.o 

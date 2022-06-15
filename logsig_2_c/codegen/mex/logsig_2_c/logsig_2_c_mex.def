@@ -7,10 +7,3 @@ logsig_2_c
 logsig_2_c_initialize
 logsig_2_c_terminate
 logsig_2_c_atexit
-emlrt_marshallOut
-emlrt_marshallIn
-b_emlrt_marshallIn
-e_emlrt_marshallIn
-emxFree_char_T
-emxInit_char_T
-emxEnsureCapacity_char_T

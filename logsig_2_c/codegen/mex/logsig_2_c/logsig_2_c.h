@@ -21,6 +21,6 @@
 #include <string.h>
 
 /* Function Declarations */
-real_T logsig_2_c(const emlrtStack *sp, real_T M);
+real_T logsig_2_c(real_T M);
 
 /* End of code generation (logsig_2_c.h) */

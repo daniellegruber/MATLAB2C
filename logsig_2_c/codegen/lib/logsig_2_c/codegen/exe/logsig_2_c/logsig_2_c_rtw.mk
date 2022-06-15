@@ -2,7 +2,7 @@
 ## Makefile generated for component 'logsig_2_c'. 
 ## 
 ## Makefile     : logsig_2_c_rtw.mk
-## Generated on : Wed Jun 15 11:26:17 2022
+## Generated on : Wed Jun 15 11:31:15 2022
 ## Final product: $(START_DIR)/logsig_2_c.exe
 ## Product type : executable
 ## 
@@ -181,7 +181,7 @@ DEFINES = $(DEFINES_) $(DEFINES_CUSTOM) $(DEFINES_STANDARD)
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = $(START_DIR)/main.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_data.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_initialize.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_terminate.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_emxutil.c
+SRCS = $(START_DIR)/main.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_data.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_initialize.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_terminate.c $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c.c
 
 ALL_SRCS = $(SRCS)
 
@@ -189,7 +189,7 @@ ALL_SRCS = $(SRCS)
 ## OBJECTS
 ###########################################################################
 
-OBJS = main.obj logsig_2_c_data.obj logsig_2_c_initialize.obj logsig_2_c_terminate.obj logsig_2_c.obj logsig_2_c_emxutil.obj
+OBJS = main.obj logsig_2_c_data.obj logsig_2_c_initialize.obj logsig_2_c_terminate.obj logsig_2_c.obj
 
 ALL_OBJS = $(OBJS)
 
@@ -356,10 +356,6 @@ logsig_2_c_terminate.obj : $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_termin
 
 
 logsig_2_c.obj : $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
-
-
-logsig_2_c_emxutil.obj : $(START_DIR)/codegen/exe/logsig_2_c/logsig_2_c_emxutil.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 

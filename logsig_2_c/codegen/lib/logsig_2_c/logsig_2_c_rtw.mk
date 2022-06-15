@@ -2,7 +2,7 @@
 ## Makefile generated for component 'logsig_2_c'. 
 ## 
 ## Makefile     : logsig_2_c_rtw.mk
-## Generated on : Mon Jun 13 17:09:43 2022
+## Generated on : Wed Jun 15 11:31:11 2022
 ## Final product: ./logsig_2_c.lib
 ## Product type : static-library
 ## 
@@ -183,7 +183,7 @@ DEFINES = $(DEFINES_) $(DEFINES_CUSTOM) $(DEFINES_STANDARD)
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_data.c $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_initialize.c $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_terminate.c $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c.c $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_emxutil.c
+SRCS = $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_data.c $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_initialize.c $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_terminate.c $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c.c
 
 ALL_SRCS = $(SRCS)
 
@@ -191,7 +191,7 @@ ALL_SRCS = $(SRCS)
 ## OBJECTS
 ###########################################################################
 
-OBJS = logsig_2_c_data.obj logsig_2_c_initialize.obj logsig_2_c_terminate.obj logsig_2_c.obj logsig_2_c_emxutil.obj
+OBJS = logsig_2_c_data.obj logsig_2_c_initialize.obj logsig_2_c_terminate.obj logsig_2_c.obj
 
 ALL_OBJS = $(OBJS)
 
@@ -347,10 +347,6 @@ logsig_2_c_terminate.obj : $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_termin
 
 
 logsig_2_c.obj : $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c.c
-	$(CC) $(CFLAGS) -o "$@" "$<"
-
-
-logsig_2_c_emxutil.obj : $(START_DIR)/codegen/lib/logsig_2_c/logsig_2_c_emxutil.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 

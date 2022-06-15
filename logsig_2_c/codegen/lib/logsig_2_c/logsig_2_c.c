@@ -11,21 +11,11 @@
 
 /* Include files */
 #include "logsig_2_c.h"
-#include "logsig_2_c_emxutil.h"
-#include "logsig_2_c_types.h"
 #include <math.h>
-#include <stddef.h>
-#include <stdio.h>
 
 /* Function Definitions */
 double logsig_2_c(double M)
 {
-  emxArray_char_T *str;
-  double l;
-  int i;
-  int nbytes;
-  char *str_data;
-  emxInit_char_T(&str);
   /*  Compute the sigmoid function (e.g. used in logistic regression). */
   /*  Copyright (C) Christian Kothe, SCCN, 2011, christian@sccn.ucsd.edu */
   /*  */
@@ -46,16 +36,7 @@ double logsig_2_c(double M)
   /*  write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
    * Boston, MA  02111-1307 */
   /*  USA */
-  l = 1.0 / (exp(-M) + 1.0);
-  nbytes = (int)snprintf(NULL, 0, "%0.5f", l) + 1;
-  i = str->size[0] * str->size[1];
-  str->size[0] = 1;
-  str->size[1] = nbytes;
-  emxEnsureCapacity_char_T(str, i);
-  str_data = str->data;
-  snprintf(&str_data[0], (size_t)nbytes, "%0.5f", l);
-  emxFree_char_T(&str);
-  return l;
+  return 1.0 / (exp(-M) + 1.0);
 }
 
 /* End of code generation (logsig_2_c.c) */
