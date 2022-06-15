@@ -2,7 +2,7 @@
 ## Makefile generated for component 'logsig_2_c'. 
 ## 
 ## Makefile     : logsig_2_c_rtw.mk
-## Generated on : Tue Jun 14 13:32:58 2022
+## Generated on : Wed Jun 15 11:26:17 2022
 ## Final product: $(START_DIR)/logsig_2_c.exe
 ## Product type : executable
 ## 
