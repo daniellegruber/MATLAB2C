@@ -64,7 +64,8 @@ static double main_logsig_2_c(double M)
   return l;
 }
 
-int main(int argc, char **argv)
+//int main(int argc, char **argv)
+double main(int argc, char **argv)
 {
 //  (void)argc;
 //  (void)argv;
@@ -90,7 +91,8 @@ You can call entry-point functions multiple times. */
   /* Terminate the application.
 You do not need to do this more than one time. */
   logsig_2_c_terminate();
-  return 0;
+//  return 0;
+  return  l;
 }
 
 /* End of code generation (main.c) */

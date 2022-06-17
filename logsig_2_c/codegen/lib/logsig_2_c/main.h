@@ -47,7 +47,8 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-extern int main(int argc, char **argv);
+//extern int main(int argc, char **argv);
+extern double main(int argc, char **argv);
 
 #ifdef __cplusplus
 }
@@ -55,3 +56,4 @@ extern int main(int argc, char **argv);
 
 #endif
 /* End of code generation (main.h) */
+
