@@ -2,7 +2,7 @@
 % Code generation workflow:
 % https://www.mathworks.com/help/coder/code-generation.html?s_tid=CRUX_lftnav
 
-fun_name = 'logsig';
+fun_name = 'xsquare';
 cfun_name = [fun_name, '_2_c'];
 test_name = [fun_name, '_test'];
 
@@ -21,13 +21,14 @@ fun_text = fileread([cfun_name, '.m']);
 args = regexp(fun_text, '(?<=\()[^)]*(?=\))', 'match', 'once');
 args_split = strtrim(strsplit(args, ','));
 
-%% Extract outputs
+%% Extract outputs using regexp
 outs = extractBetween(fun_text,'function','=');
 if iscell(outs)
     outs = outs{1};
 end
 outs = unique(regexprep(outs, {'[', ']'}, ''));
-args_split = strtrim(strsplit(args, ','));
+outs_split = strtrim(strsplit(outs, ','));
+
 %% Check for run-time issues
 coder.screener([cfun_name, '.m'])
 eval(test_name);
@@ -88,6 +89,12 @@ eval(['codegen -report -config cfg ', cfun_name,' -args {', args, '} main.c main
 %% Run the application
 
 system([cfun_name,'.exe 1'])
+
+%%
+load('buildInfo.mat')
+%myBuildInfo = RTW.BuildInfo;
+addTMFTokens(buildInfo, ...
+             '|>CUSTOM_OUTNAME<|', [cfun_name,'.exe'], 'LINK_INFO');
 %% Package generated code in ZIP file for relocation
 % packNGo documentation: https://www.mathworks.com/help/coder/ref/packngo.html
 

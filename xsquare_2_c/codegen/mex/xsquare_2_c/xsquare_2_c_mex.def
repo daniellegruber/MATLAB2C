@@ -1,0 +1,9 @@
+LIBRARY xsquare_2_c_mex.mexw64
+EXPORTS
+mexFunction
+mexfilerequiredapiversion
+emlrtMexFcnProperties
+xsquare_2_c
+xsquare_2_c_initialize
+xsquare_2_c_terminate
+xsquare_2_c_atexit

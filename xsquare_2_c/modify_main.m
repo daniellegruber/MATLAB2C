@@ -16,156 +16,117 @@ nargv = length(args_split);
 nout = length(outs_split);
 arg_classes = cell(1,nargv);
 out_classes = cell(1,nout);
+arg_numel = zeros(1, nargv);
+out_numel = zeros(1, nout);
 
-insertion = cell(1,4);
-insertion{1} = cell(nargv, 1);
-insertion{3} = cell(nargv, 1);
+arg_declaration = cell(1,nargv);
+out_declaration = cell(1,nout);
+convert = cell(nargv, 1);
 
 for i = 1:nargv
     % determine class of variable using the variables saved in
     % workspace/mat file for testing
     arg_classes{i} = eval(['class(',args_split{i},')']);
-    insertion{1}{i} = [arg_classes{i}, ' ', args_split{i}, ';'];
+    arg_numel(i) = eval(['numel(', args_split{i}, ')']);
+    if arg_numel(i) == 1
+        arg_declaration{i} = [arg_classes{i}, ' ', args_split{i}, ';'];
+    else
+        arg_declaration{i} = [arg_classes{i}, ' ', args_split{i}, '[', num2str(arg_numel(i)), '];'];
+    end
 
     % if variable is numeric, convert from string to float using atof()
     if strcmp(arg_classes{i},'double')
-        insertion{3}{i} = [args_split{i} '= atof(argv[', num2str(i), ']);'];
+        convert{i} = [args_split{i} '= atof(argv[', num2str(i), ']);'];
+    else
+        convert{i} = [args_split{i} '= argv[', num2str(i), '];'];
     end
+    
 end
 
-insertion{2} = cell(nout, 1);
 for i = nout
     out_classes{i} = eval(['class(',outs_split{i},')']);
-    insertion{2}{i} = [out_classes{i}, ' ', outs_split{i}, ';'];
+    out_numel(i) = eval(['numel(', outs_split{i}, ')']);
+    if out_numel(i) == 1
+        out_declaration{i} = [out_classes{i}, ' ', outs_split{i}, ';'];
+    else
+        out_declaration{i} = [out_classes{i}, ' ', outs_split{i}, '[', num2str(out_numel(i)), '];'];
+    end
+
 end
 
 %% Determine whether number of arguments is correct
-insertion{4} = cell(4,1);
-insertion{4}{1} = ['if (argc != ', num2str(nargv + 1), ') {'];
-insertion{4}{2} = ['printf(''Expected ', num2str(nargv) , ' arguments: ', args, '\n'');'];
-insertion{4}{3} = 'exit(-1);';
-insertion{4}{4} = '}';
+check_arg = cell(4,1);
+check_arg{1} = ['if (argc != ', num2str(nargv + 1), ') {'];
+check_arg{2} = ['printf(''Expected ', num2str(nargv) , ' arguments: ', args, '\n'');'];
+check_arg{3} = 'exit(-1);';
+check_arg{4} = '}';
 
 %% For testing
 
-insertion{5} = cell(5,1);
-insertion{5}{1} = 'int i=0;';
-insertion{5}{2} = 'printf("\nexe name=%s", argv[0]);';
-insertion{5}{3} = 'for (i=1; i< argc; i++) {';
-insertion{5}{4} = 'printf("\narg%d=%s", i, argv[i]);';
-insertion{5}{5} = ' }';
-insertion{5}{6} = 'printf("\nM=%f",M);';
+check_command = cell(5,1);
+check_command{1} = 'int i=0;';
+check_command{2} = 'printf("\nexe name=%s", argv[0]);';
+check_command{3} = 'for (i=1; i< argc; i++) {';
+check_command{4} = 'printf("\narg%d=%s", i, argv[i]);';
+check_command{5} = ' }';
 
 %% Insert declaration of variables and argument number check
 
+insertion = [arg_declaration; out_declaration; check_arg; check_command];
 comment_idx = {'(void)argc', '(void)argv'};
 [main_lines, comment_idx] = modify_code(main_lines, comment_idx, 'comment');
 
 insert_idx = comment_idx(end);
 [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
 
+%% Also need to change the declaration in other files (main.h, cfun)
 
-%% Make sure to get output of main_cfun_name in main function
-insertion = [outs, ' = main_', cfun_name, '(', args, ');'];
-comment_idx = ['main_', cfun_name];
-segment = {'int main(int argc, char **argv)', 'return'};
-[main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment', 'search_segment',segment);
+% INSERT
+
+%% Replace ... in declarations/definitions of main_cfun_name(...) with arg declarations
+
+[fun_declare_define, fdd_idx, ~, ~] = fun_distinguish(main_lines, cfun_name);
+
+modify_idx = find(fdd_idx);
+old = regexp(fun_declare_define, '\(.*\)', 'match', 'once');
+joined_declarations = strjoin(strrep(arg_declaration, ';',''), ', ');
+new = ['(',joined_declarations,')'];
+insertion = strrep(fun_declare_define, old, new);
+
+%% Replace void in declarations/definitions of main_cfun_name output return type
+old = extractBefore(fun_declare_define, ['main_', cfun_name]);
+new = ['static ', out_classes{1}, ' '];
+insertion = strrep(insertion, old, new);
+
+[main_lines, insert_idx] = modify_code(main_lines, modify_idx, 'comment');
 [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
 
-% Switch out return 0 with return (output)
+%% Replace ... in calls of main_cfun_name(...) and cfun_name(...) with args
+
+[~, ~, fun_calls, fc_idx] = fun_distinguish(main_lines, cfun_name);
+
+modify_idx = find(fc_idx);
+old = regexp(fun_calls, '\(.*\)', 'match', 'once');
+new = ['(',args,')'];
+insertion = strrep(fun_calls, old, new);
+
+%% Make sure to return output in calls of main_cfun_name and cfun_name
+insertion = regexp(insertion, ['[/<(main_|',cfun_name,')].*'],'match','once');
+insertion = cellfun(@(x) [outs ' = ', x], insertion, 'UniformOutput', false);
+
+[main_lines, insert_idx] = modify_code(main_lines, modify_idx, 'comment');
+[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
+
+%% Switch out return 0 with return (output)
 insertion = ['return ', outs, ';'];
 comment_idx = 'return';
 [main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment', 'search_segment',segment);
 [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
 
-% Switch return type of main with return type of (output)
-insertion = [out_classes{1}, ' ', regexp(segment{1}, 'main.*', 'match', 'once')];
-comment_idx = segment{1};
-[main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment', 'search_segment',segment);
-[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
-
-%% Also need to change the declaration in other files (main.h, cfun)
-
-filesAndFolders = dir(codegen_dir);     
-filesInDir = filesAndFolders(~([filesAndFolders.isdir]));  
-stringToBeFound = 'int main(int argc, char **argv)';
-numOfFiles = length(filesInDir);
-for i = 1:numOfFiles
-    filename = filesInDir(i).name;
-
-    if isfile(filename)
-        file_text = fileread(filename);
-        lines = splitlines(file_text);
-        file_lines = lines;
-        comment_idx = find(contains(file_lines,stringToBeFound));        
-        
-        if ~isempty(comment_idx)
-            disp(['Modifying ', filename])
-            insertion = strrep(file_lines(comment_idx), 'int main', [out_classes{1}, ' main']);
-            [file_lines, insert_idx] = modify_code(file_lines, comment_idx, 'comment');
-            [file_lines, ~] = modify_code(file_lines, insert_idx, 'insert', 'insertion', insertion);
-            
-            writetable(cell2table(file_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
-            movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir, filename))
-        end   
-    end
-end
-
-%% Replace all ... in main_cfun_name(...) and cfun_name(...) with args
-comment_lines = contains(main_lines,{'//','/*'});
-
-modify_idx = regexp(main_lines,['(', cfun_name,'\(\))|', ... 
-    cfun_name,'([^', args, '].*\)'],'match','once');
-modify_idx = unique(modify_idx(~cellfun(@isempty, modify_idx)));
-
-idx = find(contains(main_lines, modify_idx) & ~comment_lines);
-str = main_lines(idx);
-old = [cfun_name,'(.*\)'];
-match = regexp(str, old, 'match', 'once');
-new = [cfun_name,'(',args,')'];
-insertion = strrep(str, match, new);
-
-[main_lines, insert_idx] = modify_code(main_lines, modify_idx, 'comment');
-[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
-
-%% Specify arg data types in call to static void main_cfun_name()
-replace_idx = ['static void main_', cfun_name, '(', args, ')'];
-
-joined_classes = cell(nargv,1);
-for i = 1:nargv
-    joined_classes{i} = [arg_classes{i}, ' ', args_split{i}];
-end
-joined_classes = strjoin(joined_classes, ' ,');
-
-replacement = main_lines(contains(main_lines, replace_idx));
-replacement = strrep(replacement, args, joined_classes);
-[main_lines, ~] = modify_code(main_lines, replace_idx, 'replace', 'replacement', replacement);
-
-%% Change void to return type
-replace_idx = find(contains(main_lines,['static void main_', cfun_name]));
-replacement = strrep(main_lines(replace_idx), 'static void', ...
-    ['static ', out_classes{1}]);
-
-[main_lines, ~] = modify_code(main_lines, replace_idx, 'replace', 'replacement', replacement);
-
-
-% actually won't do this because if there are multiple return values might
-% be hard, instead just save values
-
 %% Include stdio.h
 line = '/* Include files */';
 insertion = '#include <stdio.h>';
 insert_idx = find(contains(main_lines, line));
-[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
-
-
-
-%% Make sure to return output of cfun
-line = fun_call;
-insert_idx = find(contains(main_lines,line));
-insertion = cell(2,1);
-insertion{1} = 'printf("\nl=%f",l);';
-insertion{2} = ['return ', outs_split{1}, ';'];
 [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
 
 %% Write to file
@@ -176,6 +137,22 @@ movefile(fullfile(codegen_dir,'main.txt'),fullfile(codegen_dir,'main.c'))
 
 %% Helper functions
 
+% Distinguish between function declarations/definitions and calls
+function [fun_declare_define, fdd_idx, fun_calls, fc_idx] = fun_distinguish(code, cfun_name)
+
+comment_lines = contains(code,{'//','/*'});
+
+fun_declare_define = regexp(code, ['.*[a-zA-Z]+\s(main_|)',cfun_name,'.*'],'match','once');
+fdd_idx = ~cellfun(@isempty, fun_declare_define) & ~comment_lines;
+fun_declare_define = fun_declare_define(fdd_idx);
+
+fun_calls = regexp(code, ['.*',cfun_name,'\(.*\).*'],'match','once');
+fc_idx = ~cellfun(@isempty, fun_calls) & ~fdd_idx & ~comment_lines;
+fun_calls = fun_calls(fc_idx);
+
+end
+
+% Modify code
 function [new_code, modify_idx] = modify_code(old_code, modify_idx, modification, varargin)
 
 p = inputParser;
@@ -188,20 +165,21 @@ isValidInsert = @(x) iscell(x) || ischar(x);
 addRequired(p, 'old_code', @iscellstr);
 addRequired(p, 'modify_idx', isValidIdx);
 addRequired(p, 'modification', isValidModification)
-addOptional(p, 'insertion', {}, isValidInsert);
-addOptional(p, 'replacement', {}, isValidInsert);
-addOptional(p, 'search_segment', {}, isValidSegment); % search between given start and end strings
-addOptional(p, 'search_dir', {}, @isfolder); % search across files in specified folder
+addParameter(p, 'search_dir', {}, @isfolder); % search across files in specified folder
+addParameter(p, 'insertion', {}, isValidInsert);
+addParameter(p, 'replacement', {}, isValidInsert);
+addParameter(p, 'search_segment', {}, isValidSegment); % search between given start and end strings
+
 
 parse(p, old_code, modify_idx, modification, varargin{:});
 
 old_code = p.Results.old_code;
 modify_idx = p.Results.modify_idx;
 modification = p.Results.modification;
+search_dir = p.Results.search_dir;
 insertion = p.Results.insertion;
 replacement = p.Results.replacement;
 search_segment = p.Results.search_segment;
-search_dir = p.Results.search_dir;
 
 % Search directory
 if ~isempty(search_dir)
@@ -219,10 +197,25 @@ if ~isempty(search_dir)
             if ~isempty(modify_idx)
                 disp(['Modifying ', filename])
                 old_code = file_lines;
+                [new_code, modify_idx] = modify_code_main(old_code, modify_idx, modification, ...
+                    insertion, replacement, search_segment);
+                if ~strcmp(mfilename, filename)
+                    writetable(cell2table(file_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
+                    movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir, filename))
+                end
             end   
         end
     end
+else
+    [new_code, modify_idx] = modify_code_main(old_code, modify_idx, modification, ...
+            insertion, replacement, search_segment);
 end
+
+
+end
+
+function [new_code, modify_idx] = modify_code_main(old_code, modify_idx, modification, ...
+    insertion, replacement, search_segment)
 
 comment_lines = contains(old_code,{'//','/*'});
 
@@ -311,29 +304,21 @@ end
 
 % Insert code
 function inserted_code = insert_code(old_code, insertion, insert_idx)
-    if length(insert_idx) > 1
-        inserted_code = old_code;
-        for i = 1:length(insert_idx)
-            if length(insertion) == length(insert_idx)
-                if iscell(insertion{i})
-                    insertion{i} = vertcat(insertion{i}{:});
-                end
-                idx = insert_idx(i) + i - 1;
-            
-            end
-            
-            prev_line = old_code{idx};
-            insertion{i} = indent_code(prev_line, insertion{i});
-            inserted_code = [inserted_code(1:idx); insertion{i}; inserted_code(idx+1:end)];
+    inserted_code = old_code;
+    for i = 1:length(insert_idx)
+        if length(insertion) == length(insert_idx)
+            tmp = insertion{i};
+        else
+            tmp = insertion;
         end
-    else
-        if ~iscellstr(insertion) && ~ischar(insertion)
-            insertion = vertcat(insertion{:});
+        if ~iscellstr(tmp) && ~ischar(tmp)
+            tmp = vertcat(tmp{:});
         end
-        idx = insert_idx;
+        idx = insert_idx(i) + i - 1;
         prev_line = old_code{idx};
-        insertion = indent_code(prev_line, insertion);
-        inserted_code = [old_code(1:idx); insertion; old_code(idx+1:end)];
+        tmp = indent_code(prev_line, tmp);
+        inserted_code = [inserted_code(1:idx); tmp; inserted_code(idx+1:end)];
+        
     end
 end
 
