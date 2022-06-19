@@ -46,7 +46,8 @@ static void argInit_2x2_real_T(double result[4]);
 static double argInit_real_T(void);
 
 //static void main_xsquare_2_c(void);
-static double main_xsquare_2_c(double x[4]);
+//static int * main_xsquare_2_c(double x[4]);
+ y = static int * main_xsquare_2_c(x);
 
 /* Function Definitions */
 static void argInit_2x2_real_T(double result[4])
@@ -69,7 +70,8 @@ static double argInit_real_T(void)
 }
 
 //static void main_xsquare_2_c(void)
-static double main_xsquare_2_c(double x[4])
+//static int * main_xsquare_2_c(double x[4])
+ y = static int * main_xsquare_2_c(x)
 {
   double dv[4];
   double y[4];
@@ -78,19 +80,21 @@ static double main_xsquare_2_c(double x[4])
   /* Call the entry-point 'xsquare_2_c'. */
   argInit_2x2_real_T(dv);
 //  xsquare_2_c(dv, y);
-   y = xsquare_2_c(x);
+ y = xsquare_2_c(x);
 }
 
-int main(int argc, char **argv)
+//int main(int argc, char **argv)
+int * main(int argc, char **argv)
 {
 //  (void)argc;
 //  (void)argv;
   double x[4];
-  double y[4];
+  int * y[4];
   if (argc != 2) {
   printf('Expected 1 arguments: x\n');
   exit(-1);
   }
+  x= atof(argv[1]);
   int i=0;
   printf("\nexe name=%s", argv[0]);
   for (i=1; i< argc; i++) {

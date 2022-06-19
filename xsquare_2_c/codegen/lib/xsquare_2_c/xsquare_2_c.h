@@ -22,7 +22,8 @@ extern "C" {
 #endif
 
 /* Function Declarations */
-extern void xsquare_2_c(const double x[4], double y[4]);
+//extern void xsquare_2_c(const double x[4], double y[4]);
+extern int * xsquare_2_c(double x[4]);
 
 #ifdef __cplusplus
 }
@@ -30,3 +31,4 @@ extern void xsquare_2_c(const double x[4], double y[4]);
 
 #endif
 /* End of code generation (xsquare_2_c.h) */
+

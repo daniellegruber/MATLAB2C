@@ -6,16 +6,12 @@ main_text = fileread(fullfile(codegen_dir, 'examples\main.c'));
 lines = splitlines(main_text);
 main_lines = lines;
 
-mainh_text = fileread(fullfile(codegen_dir, 'examples\main.h'));
-lines = splitlines(mainh_text);
-mainh_lines = lines;
-
 %% Declare variables and specify data types
 
 nargv = length(args_split);
 nout = length(outs_split);
-arg_classes = cell(1,nargv);
-out_classes = cell(1,nout);
+arg_types = cell(1,nargv);
+out_types = cell(1,nout);
 arg_numel = zeros(1, nargv);
 out_numel = zeros(1, nout);
 
@@ -26,16 +22,16 @@ convert = cell(nargv, 1);
 for i = 1:nargv
     % determine class of variable using the variables saved in
     % workspace/mat file for testing
-    arg_classes{i} = eval(['class(',args_split{i},')']);
+    arg_types{i} = eval(['class(',args_split{i},')']);
     arg_numel(i) = eval(['numel(', args_split{i}, ')']);
     if arg_numel(i) == 1
-        arg_declaration{i} = [arg_classes{i}, ' ', args_split{i}, ';'];
+        arg_declaration{i} = [arg_types{i}, ' ', args_split{i}, ';'];
     else
-        arg_declaration{i} = [arg_classes{i}, ' ', args_split{i}, '[', num2str(arg_numel(i)), '];'];
+        arg_declaration{i} = [arg_types{i}, ' ', args_split{i}, '[', num2str(arg_numel(i)), '];'];
     end
 
     % if variable is numeric, convert from string to float using atof()
-    if strcmp(arg_classes{i},'double')
+    if strcmp(arg_types{i},'double')
         convert{i} = [args_split{i} '= atof(argv[', num2str(i), ']);'];
     else
         convert{i} = [args_split{i} '= argv[', num2str(i), '];'];
@@ -44,14 +40,14 @@ for i = 1:nargv
 end
 
 for i = nout
-    out_classes{i} = eval(['class(',outs_split{i},')']);
+    out_types{i} = eval(['class(',outs_split{i},')']);
     out_numel(i) = eval(['numel(', outs_split{i}, ')']);
     if out_numel(i) == 1
-        out_declaration{i} = [out_classes{i}, ' ', outs_split{i}, ';'];
+        out_declaration{i} = [out_types{i}, ' ', outs_split{i}, ';'];
     else
-        out_declaration{i} = [out_classes{i}, ' ', outs_split{i}, '[', num2str(out_numel(i)), '];'];
+        out_types{i} = 'int *'; % pointer
+        out_declaration{i} = [out_types{i}, ' ', outs_split{i}, '[', num2str(out_numel(i)), '];'];
     end
-
 end
 
 %% Determine whether number of arguments is correct
@@ -72,16 +68,12 @@ check_command{5} = ' }';
 
 %% Insert declaration of variables and argument number check
 
-insertion = [arg_declaration; out_declaration; check_arg; check_command];
+insertion = [arg_declaration; out_declaration; check_arg; convert; check_command];
 comment_idx = {'(void)argc', '(void)argv'};
 [main_lines, comment_idx] = modify_code(main_lines, comment_idx, 'comment');
 
 insert_idx = comment_idx(end);
 [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
-
-%% Also need to change the declaration in other files (main.h, cfun)
-
-% INSERT
 
 %% Replace ... in declarations/definitions of main_cfun_name(...) with arg declarations
 
@@ -95,7 +87,7 @@ insertion = strrep(fun_declare_define, old, new);
 
 %% Replace void in declarations/definitions of main_cfun_name output return type
 old = extractBefore(fun_declare_define, ['main_', cfun_name]);
-new = ['static ', out_classes{1}, ' '];
+new = ['static ', out_types{1}, ' '];
 insertion = strrep(insertion, old, new);
 
 [main_lines, insert_idx] = modify_code(main_lines, modify_idx, 'comment');
@@ -123,6 +115,59 @@ comment_idx = 'return';
 [main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment', 'search_segment',segment);
 [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
 
+%% Search directory
+
+files_and_folders = dir(codegen_dir);     
+files = files_and_folders(~([files_and_folders.isdir]));
+for i = 1:length(files)
+    filename = files(i).name;
+
+    if endsWith(filename,{'.c','.h'}) && ~strcmp('main.c', filename)
+        file_text = fileread(fullfile(codegen_dir,filename));
+        lines = splitlines(file_text);
+        file_lines = lines;       
+        
+        
+        [fun_declare_define, fdd_idx, ~, ~] = fun_distinguish(file_lines, cfun_name);
+
+        % Replace ... in declarations/definitions of xxx_cfun_name(...) with arg declarations
+        modify_idx = find(fdd_idx);
+
+        if ~isempty(modify_idx)
+            disp(['Modifying ', filename])
+            old = regexp(fun_declare_define, '\(.*\)', 'match', 'once');
+            joined_declarations = strjoin(strrep(arg_declaration, ';',''), ', ');
+            new = ['(',joined_declarations,')'];
+            insertion = strrep(fun_declare_define, old, new);
+            
+            % Replace void with output return type
+            insertion = strrep(insertion, 'void', out_types{1});
+            
+            [file_lines, insert_idx] = modify_code(file_lines, modify_idx, 'comment');
+            [file_lines, ~] = modify_code(file_lines, insert_idx, 'insert', 'insertion', insertion);
+
+            writetable(cell2table(file_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
+            movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir, filename))
+
+        end   
+    end
+end
+
+%% Change declaration of main in main.c and main.h to have proper return type
+comment_idx = 'int main(int argc, char **argv)';
+insertion = [out_types{1}, ' main(int argc, char **argv)'];
+
+[main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment');
+[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
+
+% Now main.h
+mainh_text = fileread(fullfile(codegen_dir, 'examples\main.h'));
+lines = splitlines(mainh_text);
+mainh_lines = lines;
+
+[mainh_lines, insert_idx] = modify_code(mainh_lines, comment_idx, 'comment');
+[mainh_lines, ~] = modify_code(mainh_lines, insert_idx, 'insert', 'insertion', insertion);
+
 %% Include stdio.h
 line = '/* Include files */';
 insertion = '#include <stdio.h>';
@@ -132,8 +177,8 @@ insert_idx = find(contains(main_lines, line));
 %% Write to file
 % Create a new main.c file in the codegen folder
 
-writetable(cell2table(main_lines), fullfile(codegen_dir,'main.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
-movefile(fullfile(codegen_dir,'main.txt'),fullfile(codegen_dir,'main.c'))
+writetable(cell2table(main_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
+movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir,'main.c'))
 
 %% Helper functions
 
@@ -165,7 +210,6 @@ isValidInsert = @(x) iscell(x) || ischar(x);
 addRequired(p, 'old_code', @iscellstr);
 addRequired(p, 'modify_idx', isValidIdx);
 addRequired(p, 'modification', isValidModification)
-addParameter(p, 'search_dir', {}, @isfolder); % search across files in specified folder
 addParameter(p, 'insertion', {}, isValidInsert);
 addParameter(p, 'replacement', {}, isValidInsert);
 addParameter(p, 'search_segment', {}, isValidSegment); % search between given start and end strings
@@ -176,46 +220,9 @@ parse(p, old_code, modify_idx, modification, varargin{:});
 old_code = p.Results.old_code;
 modify_idx = p.Results.modify_idx;
 modification = p.Results.modification;
-search_dir = p.Results.search_dir;
 insertion = p.Results.insertion;
 replacement = p.Results.replacement;
 search_segment = p.Results.search_segment;
-
-% Search directory
-if ~isempty(search_dir)
-    files_and_folders = dir(search_dir);     
-    files = files_and_folders(~([files_and_folders.isdir]));
-    for i = 1:length(files)
-        filename = files(i).name;
-    
-        if isfile(filename)
-            file_text = fileread(filename);
-            lines = splitlines(file_text);
-            file_lines = lines;
-            modify_idx = find(contains(file_lines, modify_idx));        
-            
-            if ~isempty(modify_idx)
-                disp(['Modifying ', filename])
-                old_code = file_lines;
-                [new_code, modify_idx] = modify_code_main(old_code, modify_idx, modification, ...
-                    insertion, replacement, search_segment);
-                if ~strcmp(mfilename, filename)
-                    writetable(cell2table(file_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
-                    movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir, filename))
-                end
-            end   
-        end
-    end
-else
-    [new_code, modify_idx] = modify_code_main(old_code, modify_idx, modification, ...
-            insertion, replacement, search_segment);
-end
-
-
-end
-
-function [new_code, modify_idx] = modify_code_main(old_code, modify_idx, modification, ...
-    insertion, replacement, search_segment)
 
 comment_lines = contains(old_code,{'//','/*'});
 

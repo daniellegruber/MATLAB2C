@@ -10,10 +10,13 @@ mainh_text = fileread(fullfile(codegen_dir, 'examples\main.h'));
 lines = splitlines(mainh_text);
 mainh_lines = lines;
 
-%%
-%eval(['size(', args_split{1}, ')'])
-%eval(['reshape(', args_split{1}, ', 1, numel(',args_split{1},'))'])
+cfun_text = fileread(fullfile(codegen_dir, [cfun_name, '.c']));
+lines = splitlines(cfun_text);
+cfun_lines = lines;
 
+cfunh_text = fileread(fullfile(codegen_dir, [cfun_name, '.h']));
+lines = splitlines(cfunh_text);
+cfunh_lines = lines;
 
 %% Declare variables and specify data types
 
@@ -77,47 +80,16 @@ check_command{5} = ' }';
 
 %% Insert declaration of variables and argument number check
 
-insertion = [arg_declaration; out_declaration; check_arg; check_command];
+insertion = [arg_declaration; out_declaration; check_arg; convert; check_command];
 comment_idx = {'(void)argc', '(void)argv'};
 [main_lines, comment_idx] = modify_code(main_lines, comment_idx, 'comment');
 
 insert_idx = comment_idx(end);
 [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
 
-
-%% Make sure to get output of main_cfun_name in main function
-insertion = [outs, ' = main_', cfun_name, '(', args, ');'];
-comment_idx = ['main_', cfun_name];
-segment = {'int main(int argc, char **argv)', 'return'};
-[main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment', 'search_segment',segment);
-[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
-
-% Switch out return 0 with return (output)
-insertion = ['return ', outs, ';'];
-comment_idx = 'return';
-[main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment', 'search_segment',segment);
-[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
-
-% Switch return type of main with return type of (output)
-% insertion = [out_classes{1}, ' ', regexp(segment{1}, 'main.*', 'match', 'once')];
-% comment_idx = segment{1};
-% [main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment', 'search_segment',segment);
-% [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
-
-%% Also need to change the declaration in other files (main.h, cfun)
-
-%% Distinguish between function declarations/definitions and calls
-comment_lines = contains(main_lines,{'//','/*'});
-
-fun_declare_define = regexp(main_lines, ['.*[a-zA-Z]+\s(main_|)',cfun_name,'.*'],'match','once');
-fdd_idx = ~cellfun(@isempty, fun_declare_define) & ~comment_lines;
-fun_declare_define = fun_declare_define(fdd_idx);
-
-fun_calls = regexp(main_lines, ['.*',cfun_name,'\(.*\).*'],'match','once');
-fc_idx = ~cellfun(@isempty, fun_calls) & ~fdd_idx & ~comment_lines;
-fun_calls = fun_calls(fc_idx);
-
 %% Replace ... in declarations/definitions of main_cfun_name(...) with arg declarations
+
+[fun_declare_define, fdd_idx, ~, ~] = fun_distinguish(main_lines, cfun_name);
 
 modify_idx = find(fdd_idx);
 old = regexp(fun_declare_define, '\(.*\)', 'match', 'once');
@@ -135,48 +107,146 @@ insertion = strrep(insertion, old, new);
 
 %% Replace ... in calls of main_cfun_name(...) and cfun_name(...) with args
 
+[~, ~, fun_calls, fc_idx] = fun_distinguish(main_lines, cfun_name);
+
 modify_idx = find(fc_idx);
 old = regexp(fun_calls, '\(.*\)', 'match', 'once');
 new = ['(',args,')'];
 insertion = strrep(fun_calls, old, new);
 
+%% Make sure to return output in calls of main_cfun_name and cfun_name
+insertion = regexp(insertion, ['[/<(main_|',cfun_name,')].*'],'match','once');
+insertion = cellfun(@(x) [outs ' = ', x], insertion, 'UniformOutput', false);
+
 [main_lines, insert_idx] = modify_code(main_lines, modify_idx, 'comment');
 [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
 
-%% Make sure to return output of cfun
-% line = fun_call;
-% insert_idx = find(contains(main_lines,line));
-% insertion = cell(2,1);
-% insertion{1} = 'printf("\nl=%f",l);';
-% insertion{2} = ['return ', outs_split{1}, ';'];
-% [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
+%% Switch out return 0 with return (output)
+insertion = ['return ', outs, ';'];
+comment_idx = 'return';
+[main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment', 'search_segment',segment);
+[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
 
+%% Also need to change the declaration in cfun.c and cfun.h
+
+% [fun_declare_define, fdd_idx, ~, ~] = fun_distinguish(cfun_lines, cfun_name);
+% 
+% modify_idx = find(fdd_idx);
+% old = regexp(fun_declare_define, '\(.*\)', 'match', 'once');
+% joined_declarations = strjoin(strrep(arg_declaration, ';',''), ', ');
+% new = ['(',joined_declarations,')'];
+% insertion = strrep(fun_declare_define, old, new);
+% 
+% % Replace void in declarations/definitions of cfun_name output return type
+% insertion = strrep(insertion, 'void', out_classes{1});
+% 
+% [cfun_lines, insert_idx] = modify_code(cfun_lines, modify_idx, 'comment');
+% [cfun_lines, ~] = modify_code(cfun_lines, insert_idx, 'insert', 'insertion', insertion);
+% 
+% % Declare output type
+% insertion = out_declaration;
+% insert_idx = find(contains(cfun_lines,'{'));
+% insert_idx = insert_idx(1);
+% [cfun_lines, ~] = modify_code(cfun_lines, insert_idx, 'insert', 'insertion', insertion);
+% 
+% % Now cfun.h
+% [fun_declare_define, fdd_idx, ~, ~] = fun_distinguish(cfunh_lines, cfun_name);
+% modify_idx = find(fdd_idx);
+% old = regexp(fun_declare_define, '\(.*\)', 'match', 'once');
+% joined_declarations = strjoin(strrep(arg_declaration, ';',''), ', ');
+% new = ['(',joined_declarations,')'];
+% insertion = strrep(fun_declare_define, old, new);
+% 
+% % Replace void in declarations/definitions of cfun_name output return type
+% insertion = strrep(insertion, 'void', out_classes{1});
+% 
+% [cfunh_lines, insert_idx] = modify_code(cfunh_lines, modify_idx, 'comment');
+% [cfunh_lines, ~] = modify_code(cfunh_lines, insert_idx, 'insert', 'insertion', insertion);
+
+%% Search directory
+
+files_and_folders = dir(codegen_dir);     
+files = files_and_folders(~([files_and_folders.isdir]));
+for i = 1:length(files)
+    filename = files(i).name;
+    folder = files(1).folder;
+
+    if endsWith(filename,{'.c','.h'}) && ~strcmp([cfun_name, '.c'], filename)
+        file_text = fileread(fullfile(folder,filename));
+        lines = splitlines(file_text);
+        file_lines = lines;       
+        
+        
+        [fun_declare_define, fdd_idx, ~, ~] = fun_distinguish(file_lines, cfun_name);
+
+        % Replace ... in declarations/definitions of xxx_cfun_name(...) with arg declarations
+        modify_idx = find(fdd_idx);
+
+        if ~isempty(modify_idx)
+            disp(['Modifying ', filename])
+            old = regexp(fun_declare_define, '\(.*\)', 'match', 'once');
+            joined_declarations = strjoin(strrep(arg_declaration, ';',''), ', ');
+            new = ['(',joined_declarations,')'];
+            insertion = strrep(fun_declare_define, old, new);
+            
+            % Replace void with output return type
+            insertion = strrep(insertion, 'void', out_classes{1});
+            
+            [file_lines, insert_idx] = modify_code(file_lines, modify_idx, 'comment');
+            [file_lines, ~] = modify_code(file_lines, insert_idx, 'insert', 'insertion', insertion);
+
+            writetable(cell2table(file_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
+            movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir, filename))
+
+        end   
+    end
+end
+
+%% Change declaration of main in main.c and main.h to have proper return type
+comment_idx = 'int main(int argc, char **argv)';
+insertion = [out_classes{1}, ' main(int argc, char **argv)'];
+
+[main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment');
+[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
+
+[mainh_lines, insert_idx] = modify_code(mainh_lines, comment_idx, 'comment');
+[mainh_lines, ~] = modify_code(mainh_lines, insert_idx, 'insert', 'insertion', insertion);
 %% Include stdio.h
 line = '/* Include files */';
 insertion = '#include <stdio.h>';
 insert_idx = find(contains(main_lines, line));
 [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
 
-
 %% Write to file
 % Create a new main.c file in the codegen folder
 
-writetable(cell2table(main_lines), fullfile(codegen_dir,'main.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
-movefile(fullfile(codegen_dir,'main.txt'),fullfile(codegen_dir,'main.c'))
+writetable(cell2table(main_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
+movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir,'main.c'))
 
+writetable(cell2table(mainh_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
+movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir,'main.h'))
+
+writetable(cell2table(cfun_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
+movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir,[cfun_name, '.c']))
+
+writetable(cell2table(cfunh_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
+movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir,[cfun_name, '.h']))
 %% Helper functions
 
 % Distinguish between function declarations/definitions and calls
+function [fun_declare_define, fdd_idx, fun_calls, fc_idx] = fun_distinguish(code, cfun_name)
 
-comment_lines = contains(main_lines,{'//','/*'});
+comment_lines = contains(code,{'//','/*'});
 
-fun_declare_define = regexp(main_lines, ['.*[a-zA-Z]+\s(main_|)',cfun_name,'.*'],'match','once');
+fun_declare_define = regexp(code, ['.*[a-zA-Z]+\s(main_|)',cfun_name,'.*'],'match','once');
 fdd_idx = ~cellfun(@isempty, fun_declare_define) & ~comment_lines;
 fun_declare_define = fun_declare_define(fdd_idx);
 
-fun_calls = regexp(main_lines, ['.*',cfun_name,'\(.*\).*'],'match','once');
+fun_calls = regexp(code, ['.*',cfun_name,'\(.*\).*'],'match','once');
 fc_idx = ~cellfun(@isempty, fun_calls) & ~fdd_idx & ~comment_lines;
 fun_calls = fun_calls(fc_idx);
+
+end
 
 % Modify code
 function [new_code, modify_idx] = modify_code(old_code, modify_idx, modification, varargin)

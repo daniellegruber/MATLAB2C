@@ -13,8 +13,10 @@
 #include "xsquare_2_c_initialize.h"
 
 /* Function Definitions */
-void xsquare_2_c_initialize(void)
+//void xsquare_2_c_initialize(void)
+int * xsquare_2_c_initialize(double x[4])
 {
 }
 
 /* End of code generation (xsquare_2_c_initialize.c) */
+

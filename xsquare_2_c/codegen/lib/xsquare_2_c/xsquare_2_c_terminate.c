@@ -13,8 +13,10 @@
 #include "xsquare_2_c_terminate.h"
 
 /* Function Definitions */
-void xsquare_2_c_terminate(void)
+//void xsquare_2_c_terminate(void)
+int * xsquare_2_c_terminate(double x[4])
 {
 }
 
 /* End of code generation (xsquare_2_c_terminate.c) */
+

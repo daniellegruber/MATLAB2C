@@ -13,7 +13,8 @@
 #include "xsquare_2_c.h"
 
 /* Function Definitions */
-void xsquare_2_c(const double x[4], double y[4])
+//void xsquare_2_c(const double x[4], double y[4])
+int * xsquare_2_c(double x[4])
 {
   y[0] = x[0] * x[0];
   y[1] = x[1] * x[1];
@@ -22,3 +23,4 @@ void xsquare_2_c(const double x[4], double y[4])
 }
 
 /* End of code generation (xsquare_2_c.c) */
+
