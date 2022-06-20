@@ -3,7 +3,8 @@
  * perform academic research at degree granting institutions only.  Not
  * for government, commercial, or other organizational use.
  *
- * xsquare_2_c_terminate.c
+// * xsquare_2_c_terminate.c
+  * xsquare_2_c_terminate.c
  *
  * Code generation for function 'xsquare_2_c_terminate'
  *
@@ -14,7 +15,7 @@
 
 /* Function Definitions */
 //void xsquare_2_c_terminate(void)
-int * xsquare_2_c_terminate(double x[4])
+double * xsquare_2_c_terminate(double x[4])
 {
 }
 

@@ -3,7 +3,8 @@
  * perform academic research at degree granting institutions only.  Not
  * for government, commercial, or other organizational use.
  *
- * xsquare_2_c_terminate.h
+// * xsquare_2_c_terminate.h
+  * xsquare_2_c_terminate.h
  *
  * Code generation for function 'xsquare_2_c_terminate'
  *
@@ -23,7 +24,7 @@ extern "C" {
 
 /* Function Declarations */
 //extern void xsquare_2_c_terminate(void);
-extern int * xsquare_2_c_terminate(double x[4]);
+extern double * xsquare_2_c_terminate(double x[4]);
 
 #ifdef __cplusplus
 }

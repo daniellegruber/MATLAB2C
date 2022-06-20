@@ -3,7 +3,8 @@
  * perform academic research at degree granting institutions only.  Not
  * for government, commercial, or other organizational use.
  *
- * xsquare_2_c.h
+// * xsquare_2_c.h
+  * xsquare_2_c.h
  *
  * Code generation for function 'xsquare_2_c'
  *
@@ -23,7 +24,7 @@ extern "C" {
 
 /* Function Declarations */
 //extern void xsquare_2_c(const double x[4], double y[4]);
-extern int * xsquare_2_c(double x[4]);
+extern double * xsquare_2_c(double x[4]);
 
 #ifdef __cplusplus
 }

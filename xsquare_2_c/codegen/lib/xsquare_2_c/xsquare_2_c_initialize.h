@@ -3,7 +3,8 @@
  * perform academic research at degree granting institutions only.  Not
  * for government, commercial, or other organizational use.
  *
- * xsquare_2_c_initialize.h
+// * xsquare_2_c_initialize.h
+  * xsquare_2_c_initialize.h
  *
  * Code generation for function 'xsquare_2_c_initialize'
  *
@@ -23,7 +24,7 @@ extern "C" {
 
 /* Function Declarations */
 //extern void xsquare_2_c_initialize(void);
-extern int * xsquare_2_c_initialize(double x[4]);
+extern double * xsquare_2_c_initialize(double x[4]);
 
 #ifdef __cplusplus
 }

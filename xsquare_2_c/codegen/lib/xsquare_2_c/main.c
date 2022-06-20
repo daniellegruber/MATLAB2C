@@ -46,8 +46,7 @@ static void argInit_2x2_real_T(double result[4]);
 static double argInit_real_T(void);
 
 //static void main_xsquare_2_c(void);
-//static int * main_xsquare_2_c(double x[4]);
- y = static int * main_xsquare_2_c(x);
+static double * main_xsquare_2_c(double x[4]);
 
 /* Function Definitions */
 static void argInit_2x2_real_T(double result[4])
@@ -70,26 +69,29 @@ static double argInit_real_T(void)
 }
 
 //static void main_xsquare_2_c(void)
-//static int * main_xsquare_2_c(double x[4])
- y = static int * main_xsquare_2_c(x)
+static double * main_xsquare_2_c(double x[4])
 {
   double dv[4];
-  double y[4];
+//  double y[4];
+  double *p_y;
   /* Initialize function 'xsquare_2_c' input arguments. */
   /* Initialize function input argument 'x'. */
   /* Call the entry-point 'xsquare_2_c'. */
   argInit_2x2_real_T(dv);
 //  xsquare_2_c(dv, y);
- y = xsquare_2_c(x);
+  p_y = xsquare_2_c(x);
+  int k;
+  for ( k = 0; k < 4; k++ ) {
+      printf("*(p_y + [%d]) : %d\n", k, *(p_y + k) );
+  }
 }
 
-//int main(int argc, char **argv)
-int * main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 //  (void)argc;
 //  (void)argv;
   double x[4];
-  int * y[4];
+  double *p_y;
   if (argc != 2) {
   printf('Expected 1 arguments: x\n');
   exit(-1);
@@ -105,12 +107,15 @@ int * main(int argc, char **argv)
   /* Invoke the entry-point functions.
 You can call entry-point functions multiple times. */
 //  main_xsquare_2_c();
-   y = main_xsquare_2_c(x);
+  p_y = main_xsquare_2_c(x);
+  int k;
+  for ( k = 0; k < 4; k++ ) {
+      printf("*(p_y + [%d]) : %d\n", k, *(p_y + k) );
+  }
   /* Terminate the application.
 You do not need to do this more than one time. */
   xsquare_2_c_terminate();
-//  return 0;
-  return  y;
+  return 0;
 }
 
 /* End of code generation (main.c) */

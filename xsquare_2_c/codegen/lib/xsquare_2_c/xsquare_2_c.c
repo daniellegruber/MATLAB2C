@@ -3,7 +3,8 @@
  * perform academic research at degree granting institutions only.  Not
  * for government, commercial, or other organizational use.
  *
- * xsquare_2_c.c
+// * xsquare_2_c.c
+  * xsquare_2_c.c
  *
  * Code generation for function 'xsquare_2_c'
  *
@@ -14,13 +15,16 @@
 
 /* Function Definitions */
 //void xsquare_2_c(const double x[4], double y[4])
-int * xsquare_2_c(double x[4])
+double * xsquare_2_c(double x[4])
 {
+static double y[4];
   y[0] = x[0] * x[0];
   y[1] = x[1] * x[1];
   y[2] = x[2] * x[2];
   y[3] = x[3] * x[3];
+  return  y;
 }
 
 /* End of code generation (xsquare_2_c.c) */
+
 

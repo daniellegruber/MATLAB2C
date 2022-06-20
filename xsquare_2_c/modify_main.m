@@ -15,8 +15,8 @@ out_types = cell(1,nout);
 arg_numel = zeros(1, nargv);
 out_numel = zeros(1, nout);
 
-arg_declaration = cell(1,nargv);
-out_declaration = cell(1,nout);
+arg_declare = cell(1,nargv);
+out_declare = cell(1,nout);
 convert = cell(nargv, 1);
 
 for i = 1:nargv
@@ -25,9 +25,9 @@ for i = 1:nargv
     arg_types{i} = eval(['class(',args_split{i},')']);
     arg_numel(i) = eval(['numel(', args_split{i}, ')']);
     if arg_numel(i) == 1
-        arg_declaration{i} = [arg_types{i}, ' ', args_split{i}, ';'];
+        arg_declare{i} = [arg_types{i}, ' ', args_split{i}, ';'];
     else
-        arg_declaration{i} = [arg_types{i}, ' ', args_split{i}, '[', num2str(arg_numel(i)), '];'];
+        arg_declare{i} = [arg_types{i}, ' ', args_split{i}, '[', num2str(arg_numel(i)), '];'];
     end
 
     % if variable is numeric, convert from string to float using atof()
@@ -42,12 +42,25 @@ end
 for i = nout
     out_types{i} = eval(['class(',outs_split{i},')']);
     out_numel(i) = eval(['numel(', outs_split{i}, ')']);
-    if out_numel(i) == 1
-        out_declaration{i} = [out_types{i}, ' ', outs_split{i}, ';'];
+    if out_numel(i) > 1 % pointer
+        return_ptr = true;
+        return_type = [out_types{1}, ' *'];
+        out_declare{i} = ['static ', out_types{i}, ' ', outs_split{i},...
+            '[', num2str(out_numel(i)), '];'];
+        ptr = ['p_', outs_split{i}];
+        ptr_declare = [out_types{1}, ' *', ptr, ';'];
     else
-        out_types{i} = 'int *'; % pointer
-        out_declaration{i} = [out_types{i}, ' ', outs_split{i}, '[', num2str(out_numel(i)), '];'];
+        return_type = out_types{1};
+        return_ptr = false;
     end
+end
+
+%% Replace initalization of array outputs with pointers
+if return_ptr
+comment_idx = [out_types{i}, ' ', outs_split{i}, '[', num2str(out_numel(i)), '];'];
+insertion = ptr_declare; 
+[main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment');
+[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
 end
 
 %% Determine whether number of arguments is correct
@@ -68,7 +81,11 @@ check_command{5} = ' }';
 
 %% Insert declaration of variables and argument number check
 
-insertion = [arg_declaration; out_declaration; check_arg; convert; check_command];
+if return_ptr
+    insertion = [arg_declare; ptr_declare; check_arg; convert; check_command];
+else
+    insertion = [arg_declare; out_declare; check_arg; convert; check_command];
+end
 comment_idx = {'(void)argc', '(void)argv'};
 [main_lines, comment_idx] = modify_code(main_lines, comment_idx, 'comment');
 
@@ -81,13 +98,18 @@ insert_idx = comment_idx(end);
 
 modify_idx = find(fdd_idx);
 old = regexp(fun_declare_define, '\(.*\)', 'match', 'once');
-joined_declarations = strjoin(strrep(arg_declaration, ';',''), ', ');
+joined_declarations = strjoin(strrep(arg_declare, ';',''), ', ');
 new = ['(',joined_declarations,')'];
 insertion = strrep(fun_declare_define, old, new);
 
 %% Replace void in declarations/definitions of main_cfun_name output return type
 old = extractBefore(fun_declare_define, ['main_', cfun_name]);
-new = ['static ', out_types{1}, ' '];
+% if return_ptr
+%     new = 'static * ';
+% else
+%     new = ['static ', out_types{1}, ' '];
+% end
+new = ['static ', return_type, ' '];
 insertion = strrep(insertion, old, new);
 
 [main_lines, insert_idx] = modify_code(main_lines, modify_idx, 'comment');
@@ -104,16 +126,26 @@ insertion = strrep(fun_calls, old, new);
 
 %% Make sure to return output in calls of main_cfun_name and cfun_name
 insertion = regexp(insertion, ['[/<(main_|',cfun_name,')].*'],'match','once');
-insertion = cellfun(@(x) [outs ' = ', x], insertion, 'UniformOutput', false);
+if return_ptr
+    insertion = cellfun(@(x) [ptr, ' = ', x], insertion, 'UniformOutput', false);
+
+    check_ptr = cell(4,1);
+    check_ptr{1} = 'int k;';
+    check_ptr{2} = ['for ( k = 0; k < ', num2str(out_numel(1)), '; k++ ) {'];
+    check_ptr{3} = ['    printf("*(', ptr, ' + [%d]) : %d\n", k, *(', ptr, ' + k) );'];   
+    check_ptr{4} = '}';
+
+    insertion2 = cell(length(insertion),1);
+    for i = 1:length(insertion)
+        insertion2{i} = [insertion(i); check_ptr];
+    end
+
+else
+    insertion2 = cellfun(@(x) [outs, ' = ', x], insertion, 'UniformOutput', false);
+end
 
 [main_lines, insert_idx] = modify_code(main_lines, modify_idx, 'comment');
-[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
-
-%% Switch out return 0 with return (output)
-insertion = ['return ', outs, ';'];
-comment_idx = 'return';
-[main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment', 'search_segment',segment);
-[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
+[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion2);
 
 %% Search directory
 
@@ -136,12 +168,14 @@ for i = 1:length(files)
         if ~isempty(modify_idx)
             disp(['Modifying ', filename])
             old = regexp(fun_declare_define, '\(.*\)', 'match', 'once');
-            joined_declarations = strjoin(strrep(arg_declaration, ';',''), ', ');
+            joined_declarations = strjoin(strrep(arg_declare, ';',''), ', ');
             new = ['(',joined_declarations,')'];
             insertion = strrep(fun_declare_define, old, new);
             
             % Replace void with output return type
-            insertion = strrep(insertion, 'void', out_types{1});
+            
+            insertion = strrep(insertion, 'void', return_type);
+            
             
             [file_lines, insert_idx] = modify_code(file_lines, modify_idx, 'comment');
             [file_lines, ~] = modify_code(file_lines, insert_idx, 'insert', 'insertion', insertion);
@@ -153,20 +187,24 @@ for i = 1:length(files)
     end
 end
 
-%% Change declaration of main in main.c and main.h to have proper return type
-comment_idx = 'int main(int argc, char **argv)';
-insertion = [out_types{1}, ' main(int argc, char **argv)'];
+%% Make sure cfun initializes and returns output
+cfun_text = fileread(fullfile(codegen_dir, [cfun_name, '.c']));
+lines = splitlines(cfun_text);
+cfun_lines = lines;
 
-[main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment');
-[main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
+if isempty(find(contains(cfun_lines, out_declare), 1))
+    insertion = out_declare;
+    insert_idx = find(contains(cfun_lines, '{'));
+    insert_idx = insert_idx(1);
+    [cfun_lines, ~] = modify_code(cfun_lines, insert_idx, 'insert', 'insertion', insertion);
+end
 
-% Now main.h
-mainh_text = fileread(fullfile(codegen_dir, 'examples\main.h'));
-lines = splitlines(mainh_text);
-mainh_lines = lines;
-
-[mainh_lines, insert_idx] = modify_code(mainh_lines, comment_idx, 'comment');
-[mainh_lines, ~] = modify_code(mainh_lines, insert_idx, 'insert', 'insertion', insertion);
+if isempty(find(contains(cfun_lines, 'return'), 1))
+    insertion = ['return ', outs, ';'];
+    insert_idx = find(contains(cfun_lines, '}'));
+    insert_idx = insert_idx(end) - 1;
+    [cfun_lines, ~] = modify_code(cfun_lines, insert_idx, 'insert', 'insertion', insertion);
+end
 
 %% Include stdio.h
 line = '/* Include files */';
@@ -180,6 +218,12 @@ insert_idx = find(contains(main_lines, line));
 writetable(cell2table(main_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
 movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir,'main.c'))
 
+% writetable(cell2table(mainh_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
+% movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir,'main.h'))
+
+writetable(cell2table(cfun_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
+movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir,[cfun_name, '.c']))
+
 %% Helper functions
 
 % Distinguish between function declarations/definitions and calls
@@ -187,7 +231,7 @@ function [fun_declare_define, fdd_idx, fun_calls, fc_idx] = fun_distinguish(code
 
 comment_lines = contains(code,{'//','/*'});
 
-fun_declare_define = regexp(code, ['.*[a-zA-Z]+\s(main_|)',cfun_name,'.*'],'match','once');
+fun_declare_define = regexp(code, ['.*[a-zA-Z*]+\s(main_|)',cfun_name,'.*'],'match','once');
 fdd_idx = ~cellfun(@isempty, fun_declare_define) & ~comment_lines;
 fun_declare_define = fun_declare_define(fdd_idx);
 
@@ -315,14 +359,22 @@ function inserted_code = insert_code(old_code, insertion, insert_idx)
     for i = 1:length(insert_idx)
         if length(insertion) == length(insert_idx)
             tmp = insertion{i};
+            if ischar(tmp) || i == 1
+                idx = insert_idx(i) + i - 1;
+            else
+                idx = insert_idx(i) + i + length(tmp) - 2;
+                
+            end
         else
             tmp = insertion;
+            idx = insert_idx(i) + i - 1;
         end
         if ~iscellstr(tmp) && ~ischar(tmp)
             tmp = vertcat(tmp{:});
+        else
+            
         end
-        idx = insert_idx(i) + i - 1;
-        prev_line = old_code{idx};
+        prev_line = inserted_code{idx};
         tmp = indent_code(prev_line, tmp);
         inserted_code = [inserted_code(1:idx); tmp; inserted_code(idx+1:end)];
         
