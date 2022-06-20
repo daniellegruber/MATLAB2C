@@ -46,7 +46,7 @@ static void argInit_2x2_real_T(double result[4]);
 static double argInit_real_T(void);
 
 //static void main_xsquare_2_c(void);
-static double * main_xsquare_2_c(double x[4]);
+static double * main_xsquare_2_c(double *p_x);
 
 /* Function Definitions */
 static void argInit_2x2_real_T(double result[4])
@@ -69,7 +69,7 @@ static double argInit_real_T(void)
 }
 
 //static void main_xsquare_2_c(void)
-static double * main_xsquare_2_c(double x[4])
+static double * main_xsquare_2_c(double *p_x)
 {
   double dv[4];
 //  double y[4];
@@ -79,7 +79,7 @@ static double * main_xsquare_2_c(double x[4])
   /* Call the entry-point 'xsquare_2_c'. */
   argInit_2x2_real_T(dv);
 //  xsquare_2_c(dv, y);
-  p_y = xsquare_2_c(x);
+  p_y = xsquare_2_c(p_x);
   int k;
   for ( k = 0; k < 4; k++ ) {
       printf("*(p_y + [%d]) : %d\n", k, *(p_y + k) );
@@ -90,13 +90,13 @@ int main(int argc, char **argv)
 {
 //  (void)argc;
 //  (void)argv;
-  double x[4];
+  double *p_x;
   double *p_y;
   if (argc != 2) {
-  printf('Expected 1 arguments: x\n');
+  printf('Expected 1 arguments: p_x\n');
   exit(-1);
   }
-  x= atof(argv[1]);
+  p_x= atof(argv[1]);
   int i=0;
   printf("\nexe name=%s", argv[0]);
   for (i=1; i< argc; i++) {
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
   /* Invoke the entry-point functions.
 You can call entry-point functions multiple times. */
 //  main_xsquare_2_c();
-  p_y = main_xsquare_2_c(x);
+  p_y = main_xsquare_2_c(p_x);
   int k;
   for ( k = 0; k < 4; k++ ) {
       printf("*(p_y + [%d]) : %d\n", k, *(p_y + k) );

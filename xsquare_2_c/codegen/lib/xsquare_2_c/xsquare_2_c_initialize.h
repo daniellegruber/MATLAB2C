@@ -24,7 +24,7 @@ extern "C" {
 
 /* Function Declarations */
 //extern void xsquare_2_c_initialize(void);
-extern double * xsquare_2_c_initialize(double x[4]);
+extern double * xsquare_2_c_initialize(double *p_x);
 
 #ifdef __cplusplus
 }

@@ -15,7 +15,7 @@
 
 /* Function Definitions */
 //void xsquare_2_c_terminate(void)
-double * xsquare_2_c_terminate(double x[4])
+double * xsquare_2_c_terminate(double *p_x)
 {
 }
 

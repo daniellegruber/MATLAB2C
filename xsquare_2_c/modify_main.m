@@ -19,22 +19,45 @@ arg_declare = cell(1,nargv);
 out_declare = cell(1,nout);
 convert = cell(nargv, 1);
 
+pass_ptr = zeros(1, nargv);
+pass_type = cell(1, nargv);
+arg_ptr_declare = cell(1, nargv);
+arg_ptr = cell(1,nargv);
+
+
 for i = 1:nargv
     % determine class of variable using the variables saved in
     % workspace/mat file for testing
     arg_types{i} = eval(['class(',args_split{i},')']);
     arg_numel(i) = eval(['numel(', args_split{i}, ')']);
-    if arg_numel(i) == 1
-        arg_declare{i} = [arg_types{i}, ' ', args_split{i}, ';'];
+
+    if arg_numel(i) > 1 % pointer
+        pass_ptr(i) = true;
+        pass_type{i} = [arg_types{i}, ' *'];
+%         arg_declare{i} = [arg_types{i}, ' ', args_split{i}, '[', num2str(arg_numel(i)), '];'];
+        arg_ptr{i} = ['p_', args_split{i}];
+        args = strrep(args, args_split{i}, arg_ptr{i});
+%         arg_ptr_declare{i} = [arg_types{i}, ' *', arg_ptr{i}, ';'];
+        arg_declare{i} = [arg_types{i}, ' *', arg_ptr{i}, ';'];
     else
-        arg_declare{i} = [arg_types{i}, ' ', args_split{i}, '[', num2str(arg_numel(i)), '];'];
+        pass_type{i} = arg_types{i};
+        pass_ptr(i) = false;
+        arg_declare{i} = [arg_types{i}, ' ', args_split{i}, ';'];
     end
 
     % if variable is numeric, convert from string to float using atof()
     if strcmp(arg_types{i},'double')
-        convert{i} = [args_split{i} '= atof(argv[', num2str(i), ']);'];
+        if pass_ptr(i)
+            convert{i} = [arg_ptr{i} '= atof(argv[', num2str(i), ']);'];
+        else
+            convert{i} = [args_split{i} '= atof(argv[', num2str(i), ']);'];
+        end
     else
-        convert{i} = [args_split{i} '= argv[', num2str(i), '];'];
+        if pass_ptr(i)
+            convert{i} = [arg_ptr{i} '= argv[', num2str(i), '];'];
+        else
+            convert{i} = [args_split{i} '= argv[', num2str(i), '];'];
+        end
     end
     
 end
@@ -47,18 +70,19 @@ for i = nout
         return_type = [out_types{1}, ' *'];
         out_declare{i} = ['static ', out_types{i}, ' ', outs_split{i},...
             '[', num2str(out_numel(i)), '];'];
-        ptr = ['p_', outs_split{i}];
-        ptr_declare = [out_types{1}, ' *', ptr, ';'];
+        out_ptr = ['p_', outs_split{i}];
+        out_ptr_declare = [out_types{1}, ' *', out_ptr, ';'];
     else
         return_type = out_types{1};
         return_ptr = false;
+        out_declare{i} = ['static ', out_types{i}, ' ', outs_split{i}, ';'];
     end
 end
 
 %% Replace initalization of array outputs with pointers
 if return_ptr
 comment_idx = [out_types{i}, ' ', outs_split{i}, '[', num2str(out_numel(i)), '];'];
-insertion = ptr_declare; 
+insertion = out_ptr_declare; 
 [main_lines, insert_idx] = modify_code(main_lines, comment_idx, 'comment');
 [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion);
 end
@@ -82,7 +106,7 @@ check_command{5} = ' }';
 %% Insert declaration of variables and argument number check
 
 if return_ptr
-    insertion = [arg_declare; ptr_declare; check_arg; convert; check_command];
+    insertion = [arg_declare; out_ptr_declare; check_arg; convert; check_command];
 else
     insertion = [arg_declare; out_declare; check_arg; convert; check_command];
 end
@@ -127,12 +151,12 @@ insertion = strrep(fun_calls, old, new);
 %% Make sure to return output in calls of main_cfun_name and cfun_name
 insertion = regexp(insertion, ['[/<(main_|',cfun_name,')].*'],'match','once');
 if return_ptr
-    insertion = cellfun(@(x) [ptr, ' = ', x], insertion, 'UniformOutput', false);
+    insertion = cellfun(@(x) [out_ptr, ' = ', x], insertion, 'UniformOutput', false);
 
     check_ptr = cell(4,1);
     check_ptr{1} = 'int k;';
     check_ptr{2} = ['for ( k = 0; k < ', num2str(out_numel(1)), '; k++ ) {'];
-    check_ptr{3} = ['    printf("*(', ptr, ' + [%d]) : %d\n", k, *(', ptr, ' + k) );'];   
+    check_ptr{3} = ['    printf("*(', out_ptr, ' + [%d]) : %d\n", k, *(', out_ptr, ' + k) );'];   
     check_ptr{4} = '}';
 
     insertion2 = cell(length(insertion),1);
@@ -385,6 +409,14 @@ end
 function replaced_code = replace_code(old_code, replacement, replace_idx)
     replaced_code = old_code;
     replaced_code(replace_idx) = replacement;
+end
+
+%%
+function ptr_idx = arr_2_ptr_idx(str, arr, ptr)
+
+offset = regexp(str, ['(?<=', arr, '\[)\d*(?=\])'], 'match', 'once');
+ptr_idx = ['*(', ptr, ' + ', offset, ')'];
+
 end
 
 

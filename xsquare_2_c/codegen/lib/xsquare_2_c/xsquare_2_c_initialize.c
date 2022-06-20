@@ -15,7 +15,7 @@
 
 /* Function Definitions */
 //void xsquare_2_c_initialize(void)
-double * xsquare_2_c_initialize(double x[4])
+double * xsquare_2_c_initialize(double *p_x)
 {
 }
 
