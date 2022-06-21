@@ -36,7 +36,7 @@ for i = 1:nargv
         pass_type{i} = [arg_types{i}, ' *'];
 %         arg_declare{i} = [arg_types{i}, ' ', args_split{i}, '[', num2str(arg_numel(i)), '];'];
         arg_ptr{i} = ['p_', args_split{i}];
-        
+        args = strrep(args, args_split{i}, arg_ptr{i});
 %         arg_ptr_declare{i} = [arg_types{i}, ' *', arg_ptr{i}, ';'];
         arg_declare{i} = [arg_types{i}, ' *', arg_ptr{i}, ';'];
     else
@@ -230,6 +230,24 @@ if isempty(find(contains(cfun_lines, 'return'), 1))
     [cfun_lines, ~] = modify_code(cfun_lines, insert_idx, 'insert', 'insertion', insertion);
 end
 
+%%
+comment_lines = contains(cfun_lines,{'//','/*'});
+for i = 1:nargv
+    if pass_ptr(i)
+        comment_idx = regexp(cfun_lines, ['\s', args_split{i}, '\s'], 'match', 'once'); % MAKE SURE THIS ISN'T MATCH ONCE
+        comment_idx = find(~cellfun(@isempty, comment_idx) & ~comment_lines);
+        insertion = regexprep(cfun_lines(comment_idx), ['\s', args_split{i}, '\s'], ['\s', arg_ptr{i}, '\s']);
+        [cfun_lines, insert_idx] = modify_code(cfun_lines, comment_idx, 'comment');
+        [cfun_lines, ~] = modify_code(cfun_lines, insert_idx, 'insert', 'insertion', insertion);
+
+        comment_idx = regexp(cfun_lines, ['\<', args_split{i}, '\[\d*\]\>'], 'match', 'once');
+        comment_idx = find(~cellfun(@isempty, comment_idx) & ~comment_lines);
+        insertion = arr_2_ptr_idx(cfun_lines(idx2), args_split{i}, arg_ptr{i});
+        [cfun_lines, insert_idx] = modify_code(cfun_lines, comment_idx, 'comment');
+        [cfun_lines, ~] = modify_code(cfun_lines, insert_idx, 'insert', 'insertion', insertion);
+    end
+end
+
 %% Include stdio.h
 line = '/* Include files */';
 insertion = '#include <stdio.h>';
@@ -409,6 +427,15 @@ end
 function replaced_code = replace_code(old_code, replacement, replace_idx)
     replaced_code = old_code;
     replaced_code(replace_idx) = replacement;
+end
+
+%%
+function ptr_idx = arr_2_ptr_idx(str, arr, ptr)
+
+offset = regexp(str, ['(?<=', arr, '\[)\d*(?=\])'], 'match');
+%ptr_idx = ['*(', ptr, ' + ', offset, ')'];
+%ptr_idx = cellfun(@(x) ['*(', ptr, ' + ', x, ')'], offset, 'UniformOutput', false);
+ptr_idx = cellfun(@(y) cellfun(@(x) ['*(', ptr, ' + ', x, ')'], y, 'UniformOutput', false), offset, 'UniformOutput', 0);
 end
 
 

@@ -1,0 +1,15 @@
+This file is the manifest for the generated code from model 'xsquare_2_c'.
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\xsquare_2_c_data.c
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\xsquare_2_c_initialize.c
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\xsquare_2_c_terminate.c
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\xsquare_2_c.c
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\rtwtypes.h
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\xsquare_2_c_types.h
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\xsquare_2_c_data.h
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\xsquare_2_c_initialize.h
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\xsquare_2_c_terminate.h
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\xsquare_2_c.h
+C:\Program Files\MATLAB\R2022a\extern\include\tmwtypes.h
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\_clang-format
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\rtw_proj.tmw
+C:\Users\danie\OneDrive\Documents\MATLAB\MATLAB2C\xsquare_2_c\codegen\lib\xsquare_2_c\xsquare_2_c_manifest.txt

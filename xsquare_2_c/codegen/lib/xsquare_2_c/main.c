@@ -90,13 +90,15 @@ int main(int argc, char **argv)
 {
 //  (void)argc;
 //  (void)argv;
+  printf("hey");
   double *p_x;
   double *p_y;
+  printf("hello");
   if (argc != 2) {
   printf('Expected 1 arguments: p_x\n');
   exit(-1);
   }
-  p_x= atof(argv[1]);
+  *p_x= atof(argv[1]);
   int i=0;
   printf("\nexe name=%s", argv[0]);
   for (i=1; i< argc; i++) {

@@ -3,8 +3,7 @@
  * perform academic research at degree granting institutions only.  Not
  * for government, commercial, or other organizational use.
  *
-// * xsquare_2_c_data.c
-  * xsquare_2_c_data.c
+ * xsquare_2_c_data.c
  *
  * Code generation for function 'xsquare_2_c_data'
  *
@@ -14,4 +13,3 @@
 #include "xsquare_2_c_data.h"
 
 /* End of code generation (xsquare_2_c_data.c) */
-

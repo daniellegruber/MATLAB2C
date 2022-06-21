@@ -2,7 +2,7 @@
 ## Makefile generated for component 'xsquare_2_c'. 
 ## 
 ## Makefile     : xsquare_2_c_rtw.mk
-## Generated on : Mon Jun 20 10:39:44 2022
+## Generated on : Tue Jun 21 08:29:39 2022
 ## Final product: $(START_DIR)/xsquare_2_c.exe
 ## Product type : executable
 ## 

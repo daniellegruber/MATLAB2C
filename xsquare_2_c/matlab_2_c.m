@@ -81,14 +81,14 @@ cfg = coder.config('exe');
 % and the modified main function.
 % codegen -report -config cfg dftfilt2_2_c main.c main.h
 cd(codegen_dir)
-eval(['codegen -report -config cfg ', cfun_name,' -args {', args, '} main.c main.h'])
-
+%eval(['codegen -report -config cfg ', cfun_name,' -args {', args, '} main.c main.h'])
+eval(['codegen -report -config cfg ', cfun_name,' -args {', 'x', '} main.c main.h'])
 % By default, the code generated for the evalutable is in the 
 % folder codegen/exe/cfun_name.
 
 %% Run the application
 
-system([cfun_name,'.exe 1'])
+system([cfun_name,'.exe {1, 1, 2, 2}'])
 
 %%
 load('buildInfo.mat')

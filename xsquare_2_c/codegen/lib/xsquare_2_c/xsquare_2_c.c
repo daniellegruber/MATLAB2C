@@ -18,20 +18,17 @@
 double * xsquare_2_c(double *p_x)
 {
 static double y[4];
-  y[0] = x[0] * x[0]; // replace x with p_x or let x = *p_x, x[0] = *p_x, x[1] = *(p_x + 1), x[2] = *(p_x + 2)...
-  y[1] = x[1] * x[1];
-  y[2] = x[2] * x[2];
-  y[3] = x[3] * x[3];
+//  y[0] = x[0] * x[0];
+    y[0] = *(p_x + 0) * *(p_x + 0);
+//  y[1] = x[1] * x[1];
+    y[1] = *(p_x + 1) * *(p_x + 1);
+//  y[2] = x[2] * x[2];
+    y[2] = *(p_x + 2) * *(p_x + 2);
+//  y[3] = x[3] * x[3];
+    y[3] = *(p_x + 3) * *(p_x + 3);
   return  y;
 }
 
 /* End of code generation (xsquare_2_c.c) */
 
-/* p=a;
-q=b;
-for (i=0; i<MAX; i++)
-{
-    *q = *p;
-    q++;
-    p++;
-} */
+

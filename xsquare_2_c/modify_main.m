@@ -48,13 +48,13 @@ for i = 1:nargv
     % if variable is numeric, convert from string to float using atof()
     if strcmp(arg_types{i},'double')
         if pass_ptr(i)
-            convert{i} = [arg_ptr{i} '= atof(argv[', num2str(i), ']);'];
+            convert{i} = [deref(arg_ptr{i}) '= atof(argv[', num2str(i), ']);'];
         else
             convert{i} = [args_split{i} '= atof(argv[', num2str(i), ']);'];
         end
     else
         if pass_ptr(i)
-            convert{i} = [arg_ptr{i} '= argv[', num2str(i), '];'];
+            convert{i} = [deref(arg_ptr{i}) '= argv[', num2str(i), '];'];
         else
             convert{i} = [args_split{i} '= argv[', num2str(i), '];'];
         end
@@ -106,7 +106,7 @@ check_command{5} = ' }';
 %% Insert declaration of variables and argument number check
 
 if return_ptr
-    insertion = [arg_declare; out_ptr_declare; check_arg; convert; check_command];
+    insertion = [{'printf("hey");'}; arg_declare; out_ptr_declare; {'printf("hello");'}; check_arg; convert; check_command];
 else
     insertion = [arg_declare; out_declare; check_arg; convert; check_command];
 end
@@ -171,8 +171,9 @@ end
 [main_lines, insert_idx] = modify_code(main_lines, modify_idx, 'comment');
 [main_lines, ~] = modify_code(main_lines, insert_idx, 'insert', 'insertion', insertion2);
 
-%% Search directory
+%% Replace ... in declarations/definitions of xxx_cfun_name(...) with arg declarations
 
+% Search directory for files containing calls (maybe unnecessary?)
 files_and_folders = dir(codegen_dir);     
 files = files_and_folders(~([files_and_folders.isdir]));
 for i = 1:length(files)
@@ -183,10 +184,7 @@ for i = 1:length(files)
         lines = splitlines(file_text);
         file_lines = lines;       
         
-        
         [fun_declare_define, fdd_idx, ~, ~] = fun_distinguish(file_lines, cfun_name);
-
-        % Replace ... in declarations/definitions of xxx_cfun_name(...) with arg declarations
         modify_idx = find(fdd_idx);
 
         if ~isempty(modify_idx)
@@ -199,7 +197,6 @@ for i = 1:length(files)
             % Replace void with output return type
             
             insertion = strrep(insertion, 'void', return_type);
-            
             
             [file_lines, insert_idx] = modify_code(file_lines, modify_idx, 'comment');
             [file_lines, ~] = modify_code(file_lines, insert_idx, 'insert', 'insertion', insertion);
@@ -230,6 +227,24 @@ if isempty(find(contains(cfun_lines, 'return'), 1))
     [cfun_lines, ~] = modify_code(cfun_lines, insert_idx, 'insert', 'insertion', insertion);
 end
 
+%% Replace instances of indexed array elements with pointer + offset
+comment_lines = contains(cfun_lines,{'//','/*'});
+for i = 1:nargv
+    if pass_ptr(i)
+        comment_idx = regexp(cfun_lines, ['\s', args_split{i}, '\s'], 'match', 'once'); % MAKE SURE THIS ISN'T MATCH ONCE
+        comment_idx = find(~cellfun(@isempty, comment_idx) & ~comment_lines);
+        insertion = regexprep(cfun_lines(comment_idx), ['\s', args_split{i}, '\s'], ['\s', arg_ptr{i}, '\s']);
+        [cfun_lines, insert_idx] = modify_code(cfun_lines, comment_idx, 'comment');
+        [cfun_lines, ~] = modify_code(cfun_lines, insert_idx, 'insert', 'insertion', insertion);
+
+        comment_idx = regexp(cfun_lines, ['\<', args_split{i}, '\[\d*\]\>'], 'match', 'once');
+        comment_idx = find(~cellfun(@isempty, comment_idx) & ~comment_lines);
+        insertion = arr_2_ptr_idx(cfun_lines(comment_idx), args_split{i}, arg_ptr{i});
+        [cfun_lines, insert_idx] = modify_code(cfun_lines, comment_idx, 'comment');
+        [cfun_lines, ~] = modify_code(cfun_lines, insert_idx, 'insert', 'insertion', insertion);
+    end
+end
+
 %% Include stdio.h
 line = '/* Include files */';
 insertion = '#include <stdio.h>';
@@ -248,16 +263,17 @@ movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir,'main.c'))
 writetable(cell2table(cfun_lines), fullfile(codegen_dir,'tmp.txt'), 'WriteVariableNames', false, 'QuoteStrings','none')
 movefile(fullfile(codegen_dir,'tmp.txt'),fullfile(codegen_dir,[cfun_name, '.c']))
 
-%% Helper functions
-
-% Distinguish between function declarations/definitions and calls
+%% Function: distinguish between function declarations/definitions and calls
 function [fun_declare_define, fdd_idx, fun_calls, fc_idx] = fun_distinguish(code, cfun_name)
 
 comment_lines = contains(code,{'//','/*'});
 
-fun_declare_define = regexp(code, ['.*[a-zA-Z*]+\s(main_|)',cfun_name,'.*'],'match','once');
-fdd_idx = ~cellfun(@isempty, fun_declare_define) & ~comment_lines;
-fun_declare_define = fun_declare_define(fdd_idx);
+% fun_declare_define = regexp(code, ['.*[a-zA-Z*]+\s(main_|)',cfun_name,'.*'],'match','once');
+fdd_idx = regexp(code, ['.*[a-zA-Z*]+\s(main_|)',cfun_name,'\>'],'match','once');
+% fdd_idx = ~cellfun(@isempty, fun_declare_define) & ~comment_lines;
+fdd_idx = ~cellfun(@isempty, fdd_idx) & ~comment_lines;
+% fun_declare_define = fun_declare_define(fdd_idx);
+fun_declare_define = code(fdd_idx);
 
 fun_calls = regexp(code, ['.*',cfun_name,'\(.*\).*'],'match','once');
 fc_idx = ~cellfun(@isempty, fun_calls) & ~fdd_idx & ~comment_lines;
@@ -265,7 +281,7 @@ fun_calls = fun_calls(fc_idx);
 
 end
 
-% Modify code
+%% Function: modify code
 function [new_code, modify_idx] = modify_code(old_code, modify_idx, modification, varargin)
 
 p = inputParser;
@@ -411,12 +427,20 @@ function replaced_code = replace_code(old_code, replacement, replace_idx)
     replaced_code(replace_idx) = replacement;
 end
 
-%%
-function ptr_idx = arr_2_ptr_idx(str, arr, ptr)
+%% Function: converte indexed array element to pointer + offset
+function str = arr_2_ptr_idx(str, arr, ptr)
 
-offset = regexp(str, ['(?<=', arr, '\[)\d*(?=\])'], 'match', 'once');
-ptr_idx = ['*(', ptr, ' + ', offset, ')'];
+offset = regexp(str, ['(?<=', arr, '\[)\d*(?=\])'], 'match');
+offset = unique(horzcat(offset{:}));
+for i = 1:length(offset)
+    str = regexprep(str, [arr, '\[', offset{i}, '\]'], ['*(', ptr, ' + ', offset{i}, ')']);
+end
 
+end
+
+%% Function: dereference pointer
+function deref_ptr = deref(ptr)
+deref_ptr = ['*', ptr];
 end
 
 
